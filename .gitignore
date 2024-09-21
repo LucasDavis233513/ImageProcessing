@@ -1,0 +1,7 @@
+# Ignore the mac system files
+.DS_Store
+/.DS_Store/
+
+# Ignore the obj and the bld directory
+/[Oo]bj/
+/[Bb]ld/
