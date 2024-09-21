@@ -16,4 +16,4 @@ class ImageType {
     void GetPixelVal(int, int, int&);
 };
 
-#endif IMAGE_TYPE_H
+#endif

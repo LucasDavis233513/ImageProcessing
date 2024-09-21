@@ -11,4 +11,4 @@ class ImageProcessing {
       int ReadImage(char[], ImageType&);      // Read an image from a file
 };
 
-#endif IMAGE_PROCESSING_H
+#endif

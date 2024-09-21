@@ -57,9 +57,31 @@ void ImageType::GetImageInfo(int &rows, int &cols, int &levels) {
 }
 
 void ImageType::SetImageInfo(int rows, int cols, int levels) {
+    // If pixelValue was already allocated, free it to avoid memory leaks
+    if (this->pixelValue != NULL) {
+        for (int i = 0; i < this->N; i++) {
+            delete[] this->pixelValue[i];
+        }
+        delete[] this->pixelValue;
+    }
+
+    // Set the new image dimensions and pixel depth
     this->N = rows;
     this->M = cols;
     this->Q = levels;
+
+    // Allocate memory for pixelValue array
+    this->pixelValue = new int*[N];
+    for (int i = 0; i < N; i++) {
+        this->pixelValue[i] = new int[M];
+    }
+
+    // Optionally initialize pixel values (e.g., set to 0)
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            this->pixelValue[i][j] = 0;  // Initialize all pixels to 0
+        }
+    }
 }
 
 void ImageType::SetPixelVal(int i, int j, int val) {
