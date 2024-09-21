@@ -1,12 +1,12 @@
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
-#include "ManipulateImage.h"
+#include "ImageProcessing.h"
 
 using namespace std;
 
 // Write an image to a file
-int ManipulateImage::WriteImage(char *fname, ImageType &image) {
+int ImageProcessing::WriteImage(char *fname, ImageType &image) {
     int N, M, Q, val;
     unsigned char *charImage;
     ofstream ofp;
@@ -26,7 +26,7 @@ int ManipulateImage::WriteImage(char *fname, ImageType &image) {
     if(!ofp) { // Couldn't open the file
         cerr << "Can't Open file " << fname << endl;
         delete[] charImage; // Freeing the allocated memory
-        return 2;
+        return 1;
     }
 
     ofp << "P5" << endl;
@@ -46,7 +46,7 @@ int ManipulateImage::WriteImage(char *fname, ImageType &image) {
 }
 
 // Read an image to a file
-int ManipulateImage::ReadImage(char *fname, ImageType &image) {
+int ImageProcessing::ReadImage(char *fname, ImageType &image) {
     int N, M, Q, val;
     unsigned char *charImage;
     char header[100], *ptr;

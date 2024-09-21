@@ -1,14 +1,14 @@
-#ifndef MANIPULATE_IMAGE_H
-#define MANIPULATE_IMAGE_H
+#ifndef IMAGE_PROCESSING_H
+#define IMAGE_PROCESSING_H
 
 #include "ImageType.h"
 
-class ManipulateImage {
+class ImageProcessing {
     public:
-      ManipulateImage();
-      ~ManipulateImage();
+      ImageProcessing();
+      ~ImageProcessing();
       int WriteImage(char[], ImageType&);     // Write an image to a file
       int ReadImage(char[], ImageType&);      // Read an image from a file
 };
 
-#endif MANIPULATE_IMAGE_H
+#endif IMAGE_PROCESSING_H
