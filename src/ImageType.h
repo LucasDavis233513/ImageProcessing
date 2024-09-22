@@ -1,6 +1,6 @@
 #ifndef IMAGE_TYPE_H
 #define IMAGE_TYPE_H
-
+// Test
 class ImageType {
   private:
     int N, M, Q;
