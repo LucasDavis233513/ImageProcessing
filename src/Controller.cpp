@@ -19,7 +19,7 @@ char* FindImage() {
         exit(1);
     }
 
-    printf("\nPath of the image and its name: ");
+    printf("Path of the image and its name: ");
     cin >> imageName;
 
     return imageName;
@@ -38,7 +38,7 @@ int main() {
         return 1;
     }
 
-    printf("By what factor do you want to sample the image? ");
+    printf("\nBy what factor do you want to sample the image? ");
     cin >> factor;
 
     process.Sample(factor, image);
