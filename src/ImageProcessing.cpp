@@ -114,3 +114,27 @@ int ImageProcessing::ReadImage(char *fname, ImageType &image) {
 
     return 0;
 }
+
+// Change the spatial resolution of an image by sub-sampling by a defined factor
+int ImageProcessing::Sample(int factor, ImageType& image) {
+    int N, M, Q, val;
+    image.GetImageInfo(N, M, Q);
+    ImageType subImage(N/factor, M/factor, Q/factor);
+
+    // Sub-Sample by the variable factor
+    for (int i = 0; i < N; i += factor) {
+        for (int j = 0; j < M; j += factor) {
+            image.GetPixelVal(i, j, val);
+            subImage.SetPixelVal(i, j, val);
+        }
+    }
+
+    // Resize the image back to the original size
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            
+        }
+    }
+
+    return 0;
+}

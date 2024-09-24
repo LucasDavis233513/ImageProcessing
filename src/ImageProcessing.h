@@ -7,8 +7,11 @@ class ImageProcessing {
     public:
       ImageProcessing();
       ~ImageProcessing();
+
       int WriteImage(char[], ImageType&);     // Write an image to a file
       int ReadImage(char[], ImageType&);      // Read an image from a file
+
+      int Sample(int, ImageType&);
 };
 
 #endif
