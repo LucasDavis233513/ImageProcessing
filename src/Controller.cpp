@@ -4,29 +4,47 @@
 #include "ImageType.h"
 #include "ImageProcessing.h"
 
+#define MAX_PATH_LENGTH 256
+
 using namespace std;
+
+// Asks the user for the path of the image
+char* FindImage() {
+    // Alocate memory for the imageName
+    char* imageName = (char*)malloc(MAX_PATH_LENGTH * sizeof(char));
+
+    // Exit if we failed to allocate memory for the image path
+    if (imageName == NULL) {
+        cerr << "Failed to alocate memory for the image path\n";
+        exit(1);
+    }
+
+    printf("\nPath of the image and its name: ");
+    cin >> imageName;
+
+    return imageName;
+}
 
 int main() {
     ImageType image;
     ImageProcessing process;
-    char imageName[53] = "/home/ldavis/Code/ImageProcessing/bld/img/aerial.pgm";
-    char imageName2[54] = "/home/ldavis/Code/ImageProcessing/bld/img/aerial2.pgm";
-    int M, N, Q, val, result;
+    int result, factor;
 
     printf("Reading Image\n");
-    result = process.ReadImage(imageName, image);
+    result = process.ReadImage(FindImage(), image);
 
     if (result != 0) {
         printf("Error Code: %d", result);
         return 1;
     }
 
-    image.GetImageInfo(N, M, Q);
+    printf("By what factor do you want to sample the image? ");
+    cin >> factor;
 
-    printf("The header info is: %d x %d, %d\n", N, M, Q);
+    process.Sample(factor, image);
     
     printf("\nWriting Image\n");
-    process.WriteImage(imageName2, image);
+    process.WriteImage(FindImage(), image);
 
     return 0;
 }
