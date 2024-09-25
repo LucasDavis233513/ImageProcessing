@@ -139,7 +139,7 @@ int ImageProcessing::Sample(int factor, ImageType& image) {
     for (int i = 0; i < subN; i++) {
         for (int j = 0; j < subM; j++) {
             image.GetPixelVal(i * factor, j * factor, val);
-            charImage[i*subM+j] = (unsigned char)val;
+            charImage[i * subM + j] = (unsigned char)val;
         }
     }
 

@@ -10,8 +10,10 @@ class ImageProcessing {
 
       int WriteImage(char[], ImageType&);     // Write an image to a file
       int ReadImage(char[], ImageType&);      // Read an image from a file
-
-      int Sample(int, ImageType&);
+      
+      // Assignment 1
+      int Sample(int, ImageType&);            // Question 1
+      int Quantization(ImageType&);           // Quesiton 2
 };
 
 #endif
