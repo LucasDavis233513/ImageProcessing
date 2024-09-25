@@ -119,7 +119,6 @@ int ImageProcessing::ReadImage(char *fname, ImageType &image) {
 }
 
 // Change the spatial resolution of an image by sub-sampling by a defined factor
-// Then resize the image back to the original size
 int ImageProcessing::Sample(int factor, ImageType& image) {
     int N, M, Q, val;               // Rows, Colummns, Quantization, and pixel value variables
     unsigned char *charImage;       // Array to hold the pixel values of the image
@@ -144,14 +143,41 @@ int ImageProcessing::Sample(int factor, ImageType& image) {
         }
     }
 
-    // Resize the image back to the original size
-    for (int o = 0; o < N; o++) {
-        for (int k = 0; k < M; k++) {
-            int subO = o / factor;
-            int subK = k / factor;
+    // Resize the image back to the original size using bilinear interoplation
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            // Scale the destination coordinates back to the original image
+            float orgX = i / factor;
+            float orgY = j / factor;
 
-            val = static_cast<int>(charImage[subO * subM + subK]);
-            image.SetPixelVal(o, k, val);
+            // Get integer coordinates for the top-left corner
+            int topLeftX = static_cast<int>(orgX);
+            int topLeftY = static_cast<int>(orgY);
+
+            // Make sure that the image stays within its bounds
+            int bottomRightX = (topLeftX + 1 < subM) ? topLeftX + 1 : topLeftX;
+            int bottomRightY = (topLeftY + 1 < subM) ? topLeftY + 1 : topLeftY;
+
+            // Get the pixel values from the four neighboring points
+            int topLeft = static_cast<int>(charImage[topLeftX * subM + topLeftY]);              // a
+            int topRight = static_cast<int>(charImage[topLeftX * subM + bottomRightY]);         // b
+            int bottomLeft = static_cast<int>(charImage[bottomRightX * subM + topLeftY]);       // c
+            int bottomRight = static_cast<int>(charImage[bottomRightX * subM + bottomRightY]);  // d
+
+            // Calculate how far the current point is within the grid cell
+            float fractionalX = orgX - topLeftX;
+            float fractionalY = orgY - topLeftY;
+
+            // Calculate the bilinear interpolation of the image using the equation
+            // I(x, y) = ax + by + cxy + d
+            val = 
+                topLeft * fractionalX +                     // ax
+                topRight * fractionalY +                    // by
+                bottomLeft * fractionalX * fractionalY +    // cxy
+                bottomRight;                                // d
+
+            // Set the interpolated pixel value in the resized image
+            image.SetPixelVal(i, j, val);
         }
     }
 
