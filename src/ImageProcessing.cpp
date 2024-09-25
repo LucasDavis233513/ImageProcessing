@@ -12,7 +12,7 @@ ImageProcessing::~ImageProcessing() { }
 
 // Write an image to a file
 int ImageProcessing::WriteImage(char *fname, ImageType &image) {
-    int N, M, Q, val;               // Row, Column, Quantization, and pixel value declaration
+    int N, M, Q, val;               // Row, Column, Grey Level, and pixel value declaration
     unsigned char *charImage;
     ofstream ofp;
 
@@ -56,7 +56,7 @@ int ImageProcessing::WriteImage(char *fname, ImageType &image) {
 
 // Read an image to a file
 int ImageProcessing::ReadImage(char *fname, ImageType &image) {
-    int N, M, Q, val;               // Row, Column, Quantization, and pixel value declaration
+    int N, M, Q, val;               // Rows, Colummns, Gery Level, and pixel value variables
     unsigned char *charImage;
     char header [100], *ptr;
     ifstream ifp;
@@ -120,7 +120,7 @@ int ImageProcessing::ReadImage(char *fname, ImageType &image) {
 
 // Change the spatial resolution of an image by sub-sampling by a defined factor
 int ImageProcessing::Sample(int factor, ImageType& image) {
-    int N, M, Q, val;               // Rows, Colummns, Quantization, and pixel value variables
+    int N, M, Q, val;               // Rows, Colummns, Gery Level, and pixel value variables
     unsigned char *charImage;       // Array to hold the pixel values of the image
 
     image.GetImageInfo(N, M, Q);
@@ -182,6 +182,32 @@ int ImageProcessing::Sample(int factor, ImageType& image) {
     }
 
     delete[] charImage;
+
+    return 0;
+}
+
+// Change the grey levels in an image
+int ImageProcessing::Quantization(int levels, ImageType& image) {
+    if (levels == 2) {
+        this->Slice(255, 0, image);
+        return 1;
+    }
+
+    float delta = 255 / (levels - 1);   // The size of each quantization interval.
+    int N, M, Q, val, Qx;               // Rows, Colummns, Gery Level, pixel value, and the Qx quantized intensity value
+    image.GetImageInfo(N, M, Q);
+
+    // Loop through each pixel value of a given image
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            image.GetPixelVal(i, j, val);
+
+            // Apply the Quantization formula to get the new intensity value
+            Qx = static_cast<int>(val / delta) * delta;
+
+            image.SetPixelVal(i, j, Qx);
+        }
+    }
 
     return 0;
 }

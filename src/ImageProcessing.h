@@ -13,7 +13,7 @@ class ImageProcessing {
       
       // Assignment 1
       int Sample(int, ImageType&);            // Question 1
-      int Quantization(ImageType&);           // Quesiton 2
+      int Quantization(int, ImageType&);      // Quesiton 2
 };
 
 #endif

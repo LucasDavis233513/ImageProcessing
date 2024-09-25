@@ -38,10 +38,10 @@ int main() {
         return 1;
     }
 
-    printf("\nBy what factor do you want to sample the image? ");
+    printf("\nWhat Quantization level do you want? ");
     cin >> factor;
 
-    process.Sample(factor, image);
+    process.Quantization(factor, image);
     
     printf("\nWriting Image\n");
     process.WriteImage(FindImage(), image);
