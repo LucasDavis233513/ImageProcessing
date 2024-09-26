@@ -31,9 +31,9 @@ map<int, int>::iterator Histogram::GetMax() {
 }
 
 // Display a histogram to the console
-void Histogram::DisplayHistogram(Histogram &hist) {
+void Histogram::DisplayHistogram() {
     // Get the max_value of the histogram
-    map<int, int>::iterator max_value = hist.GetMax();
+    map<int, int>::iterator max_value = this->GetMax();
     if (max_value == this->Data.end()) {
         cout << "Histogram is empty" << endl;
         return;

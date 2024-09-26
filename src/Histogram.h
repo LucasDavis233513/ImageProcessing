@@ -19,7 +19,7 @@ class Histogram {
         int GetHistData(int);                       // Return the value at a given key
         map<int, int>::iterator GetMax();           // Return the max pair in the map
 
-        void DisplayHistogram(Histogram &hist);     // Display a Histogram to the screen
+        void DisplayHistogram();                    // Display a Histogram to the screen
 };
 
 #endif
