@@ -14,6 +14,8 @@ class ImageProcessing {
       // Assignment 1
       int Sample(int, ImageType&);            // Question 1
       int Quantization(int, ImageType&);      // Quesiton 2
+      int HisEqualization(ImageType&);        // Question 3
+      int HisSpecification(ImageType&);       // Question 4
 };
 
 #endif

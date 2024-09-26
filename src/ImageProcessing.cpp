@@ -190,7 +190,7 @@ int ImageProcessing::Sample(int factor, ImageType& image) {
 int ImageProcessing::Quantization(int levels, ImageType& image) {
     int N, M, Q, val, Qx;               // Rows, Colummns, Gery Level, pixel value, and the Qx quantized intensity value
     image.GetImageInfo(N, M, Q);
-    float delta = Q / (levels);   // The size of each quantization interval.
+    float delta = Q / (levels);         // The size of each quantization interval.
 
     // Loop through each pixel value of a given image
     for (int i = 0; i < N; i++) {
@@ -204,5 +204,13 @@ int ImageProcessing::Quantization(int levels, ImageType& image) {
         }
     }
 
+    return 0;
+}
+
+int ImageProcessing::HisEqualization(ImageType& image) {
+    return 0;
+}
+
+int ImageProcessing::HisSpecification(ImageType& image) {
     return 0;
 }
