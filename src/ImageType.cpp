@@ -58,7 +58,7 @@ char* ImageType::FindImage() {
     // Exit if we failed to allocate memory for the image path
     if (imageName == NULL) {
         cerr << "Failed to alocate memory for the image path\n";
-        exit(1);
+        return NULL;
     }
 
     printf("Path of the image and its name: ");
@@ -117,12 +117,17 @@ int ImageType::WriteImage() {
     ofstream ofp;
 
     char* fname = this->FindImage();
+    if (fname == NULL) {
+        cerr << "Unable to allocate memory for the filepath";
+        return 1;
+    }
+
     this->GetImageInfo(N, M, Q);
 
     charImage = (unsigned char *)new unsigned char [M*N];
     if (charImage == NULL) {
         cerr << "Failed to allocate memory for charImage\n";
-        return 1;
+        return 2;
     }
 
     // Convert integer values to unsigned char
@@ -137,7 +142,7 @@ int ImageType::WriteImage() {
     if(!ofp) { // Couldn't open the file
         cerr << "Can't Open file " << fname << endl;
         delete[] charImage; // Freeing the allocated memory
-        return 2;
+        return 3;
     }
 
     ofp << "P5" << endl;
@@ -148,7 +153,7 @@ int ImageType::WriteImage() {
     if(ofp.fail()) { // Couldn't write the image
         cerr << "Can't Write Image " << fname << endl;
         delete[] charImage; // Freeing the allocated memory
-        return 3;
+        return 4;
     }
 
     ofp.close();
@@ -164,12 +169,16 @@ int ImageType::ReadImage() {
     ifstream ifp;
 
     char* fname = this->FindImage();
+    if (fname == NULL) {
+        cerr << "Unable to allocate memory for the filepath";
+        return 1;
+    }
 
     ifp.open(fname, ios::in | ios::binary);
 
     if (!ifp) {
         cerr << "Can't read image: " << fname << endl;
-        return 1;
+        return 2;
     }
 
     // read header
@@ -177,7 +186,7 @@ int ImageType::ReadImage() {
     if ( (header[0]!=80) ||    /* 'P' */
         (header[1]!=53) ) {   /* '5' */
         cerr << "Image " << fname << " is not PGM\n";
-        return 2;
+        return 3;
     }
 
     ifp.getline(header,100,'\n');
@@ -193,7 +202,7 @@ int ImageType::ReadImage() {
     charImage = (unsigned char *) new unsigned char [M*N];
     if (charImage == nullptr) {
         cerr << "Memory allocation for charImage failed!\n";
-        return 3;
+        return 4;
     }
 
     ifp.read( reinterpret_cast<char *>(charImage), (M*N)*sizeof(unsigned char));
@@ -202,7 +211,7 @@ int ImageType::ReadImage() {
     if (ifp.fail()) {
         cerr << "Image " << fname << " has wrong size\n";
         delete[] charImage;
-        return 4;
+        return 5;
     }
 
     ifp.close();
