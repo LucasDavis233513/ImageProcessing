@@ -188,14 +188,9 @@ int ImageProcessing::Sample(int factor, ImageType& image) {
 
 // Change the grey levels in an image
 int ImageProcessing::Quantization(int levels, ImageType& image) {
-    if (levels == 2) {
-        this->Slice(255, 0, image);
-        return 1;
-    }
-
-    float delta = 255 / (levels - 1);   // The size of each quantization interval.
     int N, M, Q, val, Qx;               // Rows, Colummns, Gery Level, pixel value, and the Qx quantized intensity value
     image.GetImageInfo(N, M, Q);
+    float delta = Q / (levels);   // The size of each quantization interval.
 
     // Loop through each pixel value of a given image
     for (int i = 0; i < N; i++) {
