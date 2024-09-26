@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include "ImageType.h"
 
 using namespace std;
@@ -50,6 +49,25 @@ ImageType::~ImageType() {
     delete[] this->pixelValue;
 }
 
+// Private Methods
+// Asks the user for the path of the image
+char* ImageType::FindImage() {
+    // Alocate memory for the imageName
+    char* imageName = (char*)malloc(MAX_PATH_LENGTH * sizeof(char));
+
+    // Exit if we failed to allocate memory for the image path
+    if (imageName == NULL) {
+        cerr << "Failed to alocate memory for the image path\n";
+        exit(1);
+    }
+
+    printf("Path of the image and its name: ");
+    cin >> imageName;
+
+    return imageName;
+}
+
+// Public Methods
 void ImageType::GetImageInfo(int &rows, int &cols, int &levels) {
     rows = this->N;
     cols = this->M;
@@ -84,10 +102,122 @@ void ImageType::SetImageInfo(int rows, int cols, int levels) {
     }
 }
 
+void ImageType::GetPixelVal(int i, int j, int &val) {
+    val = this->pixelValue[i][j];
+}
+
 void ImageType::SetPixelVal(int i, int j, int val) {
     this->pixelValue[i][j] = val;
 }
 
-void ImageType::GetPixelVal(int i, int j, int &val) {
-    val = this->pixelValue[i][j];
+// Write an image to a file
+int ImageType::WriteImage() {
+    int N, M, Q, val;
+    unsigned char *charImage;
+    ofstream ofp;
+
+    char* fname = this->FindImage();
+    this->GetImageInfo(N, M, Q);
+
+    charImage = (unsigned char *)new unsigned char [M*N];
+    if (charImage == NULL) {
+        cerr << "Failed to allocate memory for charImage\n";
+        return 1;
+    }
+
+    // Convert integer values to unsigned char
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            this->GetPixelVal(i, j, val);
+            charImage[i*M+j] = (unsigned char)val;
+        }
+    }
+
+    ofp.open(fname, ios::out | ios::binary);
+    if(!ofp) { // Couldn't open the file
+        cerr << "Can't Open file " << fname << endl;
+        delete[] charImage; // Freeing the allocated memory
+        return 2;
+    }
+
+    ofp << "P5" << endl;
+    ofp << N << " " << M << endl;
+    ofp << Q << endl;
+
+    ofp.write(reinterpret_cast<char *>(charImage), (M*N)*sizeof(unsigned char));
+    if(ofp.fail()) { // Couldn't write the image
+        cerr << "Can't Write Image " << fname << endl;
+        delete[] charImage; // Freeing the allocated memory
+        return 3;
+    }
+
+    ofp.close();
+    delete[] charImage; // Freeing the allocated memory
+    return 0; // Return 0 on success
+}
+
+// Read an image to a file
+int ImageType::ReadImage() {
+    int N, M, Q, val;               // Rows, Colummns, Gery Level, and pixel value variables
+    unsigned char *charImage;
+    char header [100], *ptr;
+    ifstream ifp;
+
+    char* fname = this->FindImage();
+
+    ifp.open(fname, ios::in | ios::binary);
+
+    if (!ifp) {
+        cerr << "Can't read image: " << fname << endl;
+        return 1;
+    }
+
+    // read header
+    ifp.getline(header,100,'\n');
+    if ( (header[0]!=80) ||    /* 'P' */
+        (header[1]!=53) ) {   /* '5' */
+        cerr << "Image " << fname << " is not PGM\n";
+        return 2;
+    }
+
+    ifp.getline(header,100,'\n');
+    while(header[0]=='#')
+        ifp.getline(header,100,'\n');
+
+    M=strtol(header,&ptr,0);
+    N=atoi(ptr);
+
+    ifp.getline(header,100,'\n');
+    Q=strtol(header,&ptr,0);
+
+    charImage = (unsigned char *) new unsigned char [M*N];
+    if (charImage == nullptr) {
+        cerr << "Memory allocation for charImage failed!\n";
+        return 3;
+    }
+
+    ifp.read( reinterpret_cast<char *>(charImage), (M*N)*sizeof(unsigned char));
+    cout << "Bytes read: " << ifp.gcount() << endl;
+
+    if (ifp.fail()) {
+        cerr << "Image " << fname << " has wrong size\n";
+        delete[] charImage;
+        return 4;
+    }
+
+    ifp.close();
+
+    this->SetImageInfo(N, M, Q);
+
+    // Convert the unsigned characters to integers
+    for(int i = 0; i < N; i++) {
+        for(int j = 0; j < M; j++) {
+            val = static_cast<int>(charImage[i * M + j]);
+            this->SetPixelVal(i, j, val);
+        }
+    }
+
+    delete[] charImage;
+
+    return 0;
 }
