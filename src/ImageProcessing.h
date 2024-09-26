@@ -2,14 +2,19 @@
 #define IMAGE_PROCESSING_H
 
 #include "ImageType.h"
+#include "Histogram.h"
+
+#define MAX_PATH_LENGTH 256
 
 class ImageProcessing {
+    private:
+      char* FindImage();                      // Get the file path to the image
     public:
       ImageProcessing();
       ~ImageProcessing();
 
-      int WriteImage(char[], ImageType&);     // Write an image to a file
-      int ReadImage(char[], ImageType&);      // Read an image from a file
+      int WriteImage(ImageType&);             // Write an image to a file
+      int ReadImage(ImageType&);              // Read an image from a file
       
       // Assignment 1
       int Sample(int, ImageType&);            // Question 1

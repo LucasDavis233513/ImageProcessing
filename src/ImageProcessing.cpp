@@ -10,11 +10,32 @@ ImageProcessing::ImageProcessing() { }
 
 ImageProcessing::~ImageProcessing() { }
 
+// Private Methods
+// Asks the user for the path of the image
+char* ImageProcessing::FindImage() {
+    // Alocate memory for the imageName
+    char* imageName = (char*)malloc(MAX_PATH_LENGTH * sizeof(char));
+
+    // Exit if we failed to allocate memory for the image path
+    if (imageName == NULL) {
+        cerr << "Failed to alocate memory for the image path\n";
+        exit(1);
+    }
+
+    printf("Path of the image and its name: ");
+    cin >> imageName;
+
+    return imageName;
+}
+
+// Public Methods
 // Write an image to a file
-int ImageProcessing::WriteImage(char *fname, ImageType &image) {
+int ImageProcessing::WriteImage(ImageType &image) {
     int N, M, Q, val;               // Row, Column, Grey Level, and pixel value declaration
     unsigned char *charImage;
     ofstream ofp;
+
+    char* fname = this->FindImage();
 
     image.GetImageInfo(N, M, Q);
     charImage = (unsigned char *)new unsigned char [M*N];
@@ -55,11 +76,13 @@ int ImageProcessing::WriteImage(char *fname, ImageType &image) {
 }
 
 // Read an image to a file
-int ImageProcessing::ReadImage(char *fname, ImageType &image) {
+int ImageProcessing::ReadImage(ImageType &image) {
     int N, M, Q, val;               // Rows, Colummns, Gery Level, and pixel value variables
     unsigned char *charImage;
     char header [100], *ptr;
     ifstream ifp;
+
+    char* fname = this->FindImage();
 
     ifp.open(fname, ios::in | ios::binary);
 

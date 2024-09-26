@@ -3,48 +3,22 @@
 
 #include "ImageType.h"
 #include "ImageProcessing.h"
+#include "Histogram.h"
 
 #define MAX_PATH_LENGTH 256
 
 using namespace std;
 
-// Asks the user for the path of the image
-char* FindImage() {
-    // Alocate memory for the imageName
-    char* imageName = (char*)malloc(MAX_PATH_LENGTH * sizeof(char));
-
-    // Exit if we failed to allocate memory for the image path
-    if (imageName == NULL) {
-        cerr << "Failed to alocate memory for the image path\n";
-        exit(1);
-    }
-
-    printf("Path of the image and its name: ");
-    cin >> imageName;
-
-    return imageName;
-}
-
 int main() {
-    ImageType image;
-    ImageProcessing process;
-    int result, factor;
+    Histogram hist;
 
-    printf("Reading Image\n");
-    result = process.ReadImage(FindImage(), image);
+    hist.SetHistData(256, 10);
+    hist.SetHistData(128, 3);
+    hist.SetHistData(32, 1);
+    hist.SetHistData(8, 20);
+    hist.SetHistData(2, 5);
 
-    if (result != 0) {
-        printf("Error Code: %d", result);
-        return 1;
-    }
-
-    printf("\nWhat Quantization level do you want? ");
-    cin >> factor;
-
-    process.Quantization(factor, image);
-    
-    printf("\nWriting Image\n");
-    process.WriteImage(FindImage(), image);
+    hist.DisplayHistogram(hist);
 
     return 0;
 }

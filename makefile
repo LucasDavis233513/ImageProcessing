@@ -6,9 +6,10 @@ SRCDIR = src
 OBJDIR = obj
 BLDDIR = bld
 
-OBJS = $(OBJDIR)/ImageType.o $(OBJDIR)/ImageProcessing.o
+OBJS = $(OBJDIR)/ImageType.o $(OBJDIR)/ImageProcessing.o $(OBJDIR)/Histogram.o
 IMAGE =  $(SRCDIR)/ImageType.h $(SRCDIR)/ImageType.cpp
 PROCESSING = $(SRCDIR)/ImageProcessing.h $(SRCDIR)/ImageProcessing.cpp
+HISTOGRAM = $(SRCDIR)/Histogram.h $(SRCDIR)/Histogram.cpp
 
 default: $(BLDDIR)/Controller
 
@@ -20,6 +21,9 @@ $(OBJDIR)/ImageType.o: $(IMAGE)
 
 $(OBJDIR)/ImageProcessing.o: $(PROCESSING)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(SRCDIR)/ImageProcessing.cpp -o $(OBJDIR)/ImageProcessing.o
+
+$(OBJDIR)/Histogram.o: $(HISTOGRAM)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(SRCDIR)/Histogram.cpp -o $(OBJDIR)/Histogram.o
 
 clExe:
 	rm -f $(BLDDIR)/Controller
