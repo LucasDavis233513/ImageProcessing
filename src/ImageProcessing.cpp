@@ -9,6 +9,21 @@ ImageProcessing::ImageProcessing() {  }
 
 ImageProcessing::~ImageProcessing() {  }
 
+// Private Methods
+void ImageProcessing::GetHist(ImageType& image, Histogram &hist) {
+    int N, M, Q, val;
+    image.GetImageInfo(N, M, Q);
+
+    // Find the occurance of each pixel value and update the Histogram
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            image.GetPixelVal(i, j, val);
+
+            hist.SetHistData(val);
+        }
+    }
+}
+
 // Public Methods
 // Change the spatial resolution of an image by sub-sampling by a defined factor
 int ImageProcessing::Sample(int factor, ImageType& image) {
@@ -99,24 +114,55 @@ int ImageProcessing::Quantization(int levels, ImageType& image) {
     return 0;
 }
 
+// Preform Histogram Equalization on a given image
 int ImageProcessing::HisEqualization(ImageType& image) {
     Histogram hist;                     // The Image Histogram
     int N, M, Q, val;                   // Rows, Columns, Grey Levels, and Pixel Values
     image.GetImageInfo(N, M, Q);
-    char* imageName = (char*)malloc(255 * sizeof(char));
+    char* imageName;
 
-    // Find the occurance of each pixel value and update the Histogram
+    float* pdf = (float*)malloc(Q+1 * sizeof(float));
+    float* s = (float*)malloc(Q+1 * sizeof(float));
+    float* cdf = (float*)malloc(Q+1 * sizeof(float));
+
+    this->GetHist(image, hist);
+    
+    // Save the original histogram as a pgm image
+    imageName = (char*)"/Users/lucasdavis/Code/ImageProcessing/bld/img/histogram.pgm";
+    hist.SaveHistImg(imageName);
+
+    for (int i = 0; i < Q; i++) {
+        pdf[i] = float(hist.GetHistData(i)) / float(M*N);
+    }
+
+    // Compute the CDF (Cumulative Distribution Function)
+    cdf[0] = pdf[0];
+    for (int i = 1; i <= Q; i++) {
+        cdf[i] = cdf[i - 1] + pdf[i];
+    }
+
+    // Scale the CDF values to the range [0, Q-1]
+    for (int i = 0; i <= Q; i++) {
+        s[i] = round((Q - 1) * cdf[i]);
+    }
+
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < M; j++) {
             image.GetPixelVal(i, j, val);
 
-            hist.SetHistData(val);
+            image.SetPixelVal(i, j, s[val]);
         }
     }
-    imageName = (char*)"/Users/lucasdavis/Code/ImageProcessing/bld/img/histogram.pgm";
 
+    hist.Clear();
+
+    this->GetHist(image, hist);
+
+    imageName = (char*)"/Users/lucasdavis/Code/ImageProcessing/bld/img/equalizedHist.pgm";
     hist.SaveHistImg(imageName);
 
+    free(pdf);
+    free(s);
     return 0;
 }
 

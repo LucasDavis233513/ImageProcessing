@@ -5,6 +5,8 @@
 #include "Histogram.h"
 
 class ImageProcessing {
+    private:
+      void GetHist(ImageType&, Histogram&);
     public:
       ImageProcessing();
       ~ImageProcessing();

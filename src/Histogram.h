@@ -21,6 +21,7 @@ class Histogram {
         void SetHistData(int);                      // Set a key and value into the Data map
         int GetHistData(int);                       // Return the value at a given key
         map<int, int>::iterator GetMax();           // Return the max pair in the map
+        void Clear();
 
         int SaveHistImg(char[]);                    // Write the Histogram to a P2 pgm image file
 };

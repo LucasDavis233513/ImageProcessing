@@ -13,6 +13,7 @@ int main() {
 
     image.ReadImage();
     process.HisEqualization(image);
+    image.WriteImage();
 
     return 0;
 }

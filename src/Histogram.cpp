@@ -7,6 +7,7 @@ Histogram::~Histogram() {
     this->Data.clear();         
 }
 
+// Set a value at a given key
 void Histogram::SetHistData(int key) {
     map<int, int>::iterator it = this->Data.find(key);
 
@@ -19,10 +20,12 @@ void Histogram::SetHistData(int key) {
     }
 }
 
+// Get the value at a specific key
 int Histogram::GetHistData(int key) {
     return this->Data[key];
 }
 
+// Find the maximum value of the histogram
 map<int, int>::iterator Histogram::GetMax() {
     if (this->Data.empty()) {
         return this->Data.end();
@@ -36,6 +39,11 @@ map<int, int>::iterator Histogram::GetMax() {
     }
 
     return max;
+}
+
+// Clear the histogram data
+void Histogram::Clear() {
+    this->Data.clear();
 }
 
 // Write the histogram to a pgm image
@@ -55,7 +63,7 @@ int Histogram::SaveHistImg(char *fname) {
         return 1;
     }
 
-    // Initialize the image with a blank background
+    // Initialize the image with a White background
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < M; j++) {
             charImage[j * N + i] = (unsigned char)255;
@@ -66,9 +74,8 @@ int Histogram::SaveHistImg(char *fname) {
     scaling = min(static_cast<float>(N) / static_cast<float>(maxValue->second), static_cast<float>(1.00) - static_cast<float>(N) / static_cast<float>(maxValue->second));
     // Define bar width based on the number of histogram entries and image width
     barWidth = max(1, static_cast<int>(N / this->Data.size()));
-
-    cout << "Scalling " << scaling << endl; 
-
+    
+    // Create the black histogram bars
     x = 0;
     for (map<int, int>::iterator it = this->Data.begin(); it != this->Data.end(); ++it) {
         barHeight = it->second * scaling;  // Scale the bar height to fit in the image
