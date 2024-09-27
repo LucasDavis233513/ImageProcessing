@@ -10,7 +10,8 @@ ImageProcessing::ImageProcessing() {  }
 ImageProcessing::~ImageProcessing() {  }
 
 // Private Methods
-void ImageProcessing::GetHist(ImageType& image, Histogram &hist) {
+// Get the histogram from an image and save it to a pgm file
+void ImageProcessing::GetHist(char *fname, ImageType& image, Histogram &hist) {
     int N, M, Q, val;
     image.GetImageInfo(N, M, Q);
 
@@ -22,6 +23,8 @@ void ImageProcessing::GetHist(ImageType& image, Histogram &hist) {
             hist.SetHistData(val);
         }
     }
+
+    hist.SaveHistImg(fname);
 }
 
 // Public Methods
@@ -119,17 +122,12 @@ int ImageProcessing::HisEqualization(ImageType& image) {
     Histogram hist;                     // The Image Histogram
     int N, M, Q, val;                   // Rows, Columns, Grey Levels, and Pixel Values
     image.GetImageInfo(N, M, Q);
-    char* imageName;
 
     float* pdf = (float*)malloc(Q+1 * sizeof(float));
     float* s = (float*)malloc(Q+1 * sizeof(float));
     float* cdf = (float*)malloc(Q+1 * sizeof(float));
 
-    this->GetHist(image, hist);
-    
-    // Save the original histogram as a pgm image
-    imageName = (char*)"/Users/lucasdavis/Code/ImageProcessing/bld/img/histogram.pgm";
-    hist.SaveHistImg(imageName);
+    this->GetHist((char*)"/Users/lucasdavis/Code/ImageProcessing/bld/img/histogram.pgm", image, hist);
 
     for (int i = 0; i < Q; i++) {
         pdf[i] = float(hist.GetHistData(i)) / float(M*N);
@@ -156,10 +154,7 @@ int ImageProcessing::HisEqualization(ImageType& image) {
 
     hist.Clear();
 
-    this->GetHist(image, hist);
-
-    imageName = (char*)"/Users/lucasdavis/Code/ImageProcessing/bld/img/equalizedHist.pgm";
-    hist.SaveHistImg(imageName);
+    this->GetHist((char*)"/Users/lucasdavis/Code/ImageProcessing/bld/img/equalizedHist.pgm", image, hist);    
 
     free(pdf);
     free(s);
