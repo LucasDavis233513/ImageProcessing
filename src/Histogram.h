@@ -4,6 +4,9 @@
 #include <iostream>
 #include <stdlib.h>
 #include <map>
+#include <fstream>
+#include <algorithm>
+// #include <opencv.hpp>
 
 using namespace std;
 
@@ -15,11 +18,11 @@ class Histogram {
         Histogram();
         ~Histogram();
 
-        void SetHistData(int, int);                 // Set a key and value into the Data map
+        void SetHistData(int);                      // Set a key and value into the Data map
         int GetHistData(int);                       // Return the value at a given key
         map<int, int>::iterator GetMax();           // Return the max pair in the map
 
-        void DisplayHistogram();                    // Display a Histogram to the screen
+        int SaveHistImg(char[]);                    // Write the Histogram to a P2 pgm image file
 };
 
 #endif

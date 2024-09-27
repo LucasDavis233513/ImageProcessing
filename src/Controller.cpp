@@ -8,5 +8,11 @@
 using namespace std;
 
 int main() {
+    ImageType image;
+    ImageProcessing process;
+
+    image.ReadImage();
+    process.HisEqualization(image);
+
     return 0;
 }

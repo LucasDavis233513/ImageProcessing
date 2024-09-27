@@ -5,9 +5,9 @@
 
 using namespace std;
 
-ImageProcessing::ImageProcessing() { }
+ImageProcessing::ImageProcessing() {  }
 
-ImageProcessing::~ImageProcessing() { }
+ImageProcessing::~ImageProcessing() {  }
 
 // Public Methods
 // Change the spatial resolution of an image by sub-sampling by a defined factor
@@ -103,7 +103,19 @@ int ImageProcessing::HisEqualization(ImageType& image) {
     Histogram hist;                     // The Image Histogram
     int N, M, Q, val;                   // Rows, Columns, Grey Levels, and Pixel Values
     image.GetImageInfo(N, M, Q);
+    char* imageName = (char*)malloc(255 * sizeof(char));
 
+    // Find the occurance of each pixel value and update the Histogram
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            image.GetPixelVal(i, j, val);
+
+            hist.SetHistData(val);
+        }
+    }
+    imageName = (char*)"/Users/lucasdavis/Code/ImageProcessing/bld/img/histogram.pgm";
+
+    hist.SaveHistImg(imageName);
 
     return 0;
 }

@@ -157,6 +157,9 @@ int ImageType::WriteImage() {
     }
 
     ofp.close();
+
+    cout << "The image " << fname << " was written" << endl;
+    
     delete[] charImage; // Freeing the allocated memory
     return 0; // Return 0 on success
 }
