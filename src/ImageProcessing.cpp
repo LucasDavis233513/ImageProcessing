@@ -123,13 +123,13 @@ int ImageProcessing::HisEqualization(ImageType& image) {
     int N, M, Q, val;                   // Rows, Columns, Grey Levels, and Pixel Values
     image.GetImageInfo(N, M, Q);
 
-    float* pdf = (float*)malloc(Q+1 * sizeof(float));
-    float* s = (float*)malloc(Q+1 * sizeof(float));
-    float* cdf = (float*)malloc(Q+1 * sizeof(float));
+    float* pdf = (float*)malloc((Q+1) * sizeof(float));
+    float* s = (float*)malloc((Q+1) * sizeof(float));
+    float* cdf = (float*)malloc((Q+1) * sizeof(float));
 
     this->GetHist((char*)"/Users/lucasdavis/Code/ImageProcessing/bld/img/histogram.pgm", image, hist);
 
-    for (int i = 0; i < Q; i++) {
+    for (int i = 0; i <= Q; i++) {
         pdf[i] = float(hist.GetHistData(i)) / float(M*N);
     }
 
