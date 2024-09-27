@@ -114,7 +114,7 @@ int Histogram::SaveHistImg(char *fname) {
 
     ofp.close();
 
-    cout << "The image " << fname << " was written" << endl;
+    cout << "The image " << fname << " was written\n\n";
 
     delete[] charImage;
     return 0;

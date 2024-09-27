@@ -158,7 +158,7 @@ int ImageType::WriteImage() {
 
     ofp.close();
 
-    cout << "The image " << fname << " was written" << endl;
+    cout << "The image " << fname << " was written\n\n";
     
     delete[] charImage; // Freeing the allocated memory
     return 0; // Return 0 on success
@@ -209,7 +209,7 @@ int ImageType::ReadImage() {
     }
 
     ifp.read( reinterpret_cast<char *>(charImage), (M*N)*sizeof(unsigned char));
-    cout << "Bytes read: " << ifp.gcount() << endl;
+    cout << "Bytes read: " << ifp.gcount() << endl << endl;
 
     if (ifp.fail()) {
         cerr << "Image " << fname << " has wrong size\n";

@@ -147,7 +147,6 @@ int ImageProcessing::HisEqualization(ImageType& image) {
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < M; j++) {
             image.GetPixelVal(i, j, val);
-
             image.SetPixelVal(i, j, s[val]);
         }
     }
@@ -156,8 +155,9 @@ int ImageProcessing::HisEqualization(ImageType& image) {
 
     this->GetHist((char*)"/Users/lucasdavis/Code/ImageProcessing/bld/img/equalizedHist.pgm", image, hist);    
 
-    free(pdf);
-    free(s);
+    delete[] pdf;
+    delete[] s;
+    delete[] cdf;
     return 0;
 }
 
