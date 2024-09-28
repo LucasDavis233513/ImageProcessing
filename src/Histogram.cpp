@@ -7,6 +7,25 @@ Histogram::~Histogram() {
     this->Data.clear();         
 }
 
+// Private Methods
+// Asks the user for the path of the image
+char* Histogram::FindImage() {
+    // Alocate memory for the imageName
+    char* imageName = (char*)malloc(MAX_PATH_LENGTH * sizeof(char));
+
+    // Exit if we failed to allocate memory for the image path
+    if (imageName == NULL) {
+        cerr << "Failed to alocate memory for the image path\n";
+        return NULL;
+    }
+
+    printf("Path of the image and its name: ");
+    cin >> imageName;
+
+    return imageName;
+}
+
+// Public Methods
 // Set a value at a given key
 void Histogram::SetHistData(int key) {
     map<int, int>::iterator it = this->Data.find(key);
@@ -47,7 +66,7 @@ void Histogram::Clear() {
 }
 
 // Write the histogram to a pgm image
-int Histogram::SaveHistImg(char *fname) {
+int Histogram::SaveHistImg() {
     int N = 512;
     int M = 400;
     int barWidth, x;
@@ -55,6 +74,7 @@ int Histogram::SaveHistImg(char *fname) {
     ofstream ofp;
     unsigned char *charImage;
     map<int, int>::iterator maxValue = this->GetMax();
+    char *fname = this->FindImage();
 
     charImage = (unsigned char *)new unsigned char [M*N];
     if (charImage == NULL) {

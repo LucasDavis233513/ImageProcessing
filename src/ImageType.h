@@ -7,6 +7,8 @@
 
 #define MAX_PATH_LENGTH 256
 
+using namespace std;
+
 class ImageType {
   private:
     int N, M, Q;

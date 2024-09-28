@@ -1,7 +1,5 @@
 #include "ImageType.h"
 
-using namespace std;
-
 // Create an empty image
 ImageType::ImageType() {
     this->N = 0;

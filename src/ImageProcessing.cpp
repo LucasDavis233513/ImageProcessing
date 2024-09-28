@@ -1,9 +1,4 @@
-#include <cstddef>
-#include <iostream>
-#include <stdlib.h>
 #include "ImageProcessing.h"
-
-using namespace std;
 
 ImageProcessing::ImageProcessing() {  }
 
@@ -11,7 +6,7 @@ ImageProcessing::~ImageProcessing() {  }
 
 // Private Methods
 // Get the histogram from an image and save it to a pgm file
-void ImageProcessing::GetHist(char *fname, ImageType& image, Histogram &hist) {
+void ImageProcessing::GetHist(ImageType& image, Histogram &hist) {
     int N, M, Q, val;
     image.GetImageInfo(N, M, Q);
 
@@ -24,7 +19,7 @@ void ImageProcessing::GetHist(char *fname, ImageType& image, Histogram &hist) {
         }
     }
 
-    hist.SaveHistImg(fname);
+    hist.SaveHistImg();
 }
 
 // Public Methods
@@ -127,7 +122,7 @@ int ImageProcessing::HisEqualization(ImageType& image) {
     float* s = (float*)malloc((Q+1) * sizeof(float));
     float* cdf = (float*)malloc((Q+1) * sizeof(float));
 
-    this->GetHist((char*)"/Users/lucasdavis/Code/ImageProcessing/bld/img/histogram.pgm", image, hist);
+    this->GetHist(image, hist);
 
     for (int i = 0; i <= Q; i++) {
         pdf[i] = float(hist.GetHistData(i)) / float(M*N);
@@ -153,11 +148,11 @@ int ImageProcessing::HisEqualization(ImageType& image) {
 
     hist.Clear();
 
-    this->GetHist((char*)"/Users/lucasdavis/Code/ImageProcessing/bld/img/equalizedHist.pgm", image, hist);    
+    this->GetHist(image, hist);    
 
-    delete[] pdf;
-    delete[] s;
-    delete[] cdf;
+    free(pdf);
+    free(s);
+    free(cdf);
     return 0;
 }
 
