@@ -122,6 +122,7 @@ int ImageProcessing::HisEqualization(ImageType& image) {
     float* s = (float*)malloc((Q+1) * sizeof(float));
     float* cdf = (float*)malloc((Q+1) * sizeof(float));
 
+    cout << "The original Histogram\n";
     this->GetHist(image, hist);
 
     for (int i = 0; i <= Q; i++) {
@@ -148,6 +149,7 @@ int ImageProcessing::HisEqualization(ImageType& image) {
 
     hist.Clear();
 
+    cout << "The equalized Histogram\n";
     this->GetHist(image, hist);    
 
     free(pdf);

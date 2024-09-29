@@ -19,7 +19,7 @@ char* Histogram::FindImage() {
         return NULL;
     }
 
-    printf("Path of the image and its name: ");
+    printf("What is the path of the histogram image you would like to save? ");
     cin >> imageName;
 
     return imageName;

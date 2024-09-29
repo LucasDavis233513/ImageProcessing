@@ -19,6 +19,8 @@ char Menu() {
 	cout << "\tb  :  Quantization\n";
 	cout << "\tc  :  Histogram Equalization\n";
 	cout << "\td  :  Histogram Specification\n";
+    cout << "\tr  :  Open an Image\n";
+    cout << "\tw  :  Write an Image\n";
 	cout << "\tq  :  Quit the program\n";
 	cout << endl;
 	cout << "--------------------------------------------------------" << endl;
@@ -40,7 +42,7 @@ int main() {
     do {
         switch(Menu()) {
             case 'a':
-                cout << "Sample\n";
+                cout << "Preforming Sample method...\n";
                 cout << "By what factor? ";
                 cin >> factor;
 
@@ -48,7 +50,7 @@ int main() {
 
                 break;
             case 'b':
-                cout << "Quantization\n";
+                cout << "Preforming Quantization method...\n";
                 cout << "What is the grey levels? ";
                 cin >> levels;
 
@@ -56,10 +58,21 @@ int main() {
 
                 break;
             case 'c':
+                cout << "Preforming Histogram Equalization...\n";
+
                 process.HisEqualization(image);
                 break;
             case 'd':
                 process.HisSpecification(image);
+                break;
+            case 'r':
+                cout << "Opening an image file...\n";
+
+                image.ReadImage();
+                break;
+            case 'w':
+                cout << "Writing an image file...\n";
+                image.WriteImage();
                 break;
             case 'q':
                 running = false;
