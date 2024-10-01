@@ -23,6 +23,7 @@ void ImageProcessing::GetHist(ImageType& image, Histogram &hist) {
 }
 
 // Public Methods
+// Question 1
 // Change the spatial resolution of an image by sub-sampling by a defined factor
 int ImageProcessing::Sample(int factor, ImageType& image) {
     int N, M, Q, val;               // Rows, Colummns, Gery Level, and pixel value variables
@@ -86,11 +87,14 @@ int ImageProcessing::Sample(int factor, ImageType& image) {
         }
     }
 
+    cout << "Done Processing Image\n\n";
+
     delete[] charImage;
 
     return 0;
 }
 
+// Question 2
 // Change the grey levels in an image
 int ImageProcessing::Quantization(int levels, ImageType& image) {
     int N, M, Q, val, Qx;               // Rows, Colummns, Gery Level, pixel value, and the Qx quantized intensity value
@@ -103,36 +107,44 @@ int ImageProcessing::Quantization(int levels, ImageType& image) {
             image.GetPixelVal(i, j, val);
 
             // Apply the Quantization formula to get the new intensity value
-            Qx = static_cast<int>(val / delta) * delta;
+            Qx = static_cast<int>(val / delta) * delta + (delta / 2);
 
             image.SetPixelVal(i, j, Qx);
         }
     }
 
+    cout << "Done Processing Image\n\n";
+
     return 0;
 }
 
+// Question 3
 // Preform Histogram Equalization on a given image
 int ImageProcessing::HisEqualization(ImageType& image) {
     Histogram hist;                     // The Image Histogram
     int N, M, Q, val;                   // Rows, Columns, Grey Levels, and Pixel Values
     image.GetImageInfo(N, M, Q);
 
-    float* pdf = (float*)malloc((Q+1) * sizeof(float));
-    float* s = (float*)malloc((Q+1) * sizeof(float));
-    float* cdf = (float*)malloc((Q+1) * sizeof(float));
+    float* Pr = (float*)malloc((Q+1) * sizeof(float));  // probability of occurrence of intensity level
+    float* s = (float*)malloc((Q+1) * sizeof(float));   // the equalized pixel values
+    float* cdf = (float*)malloc((Q+1) * sizeof(float)); // The cumulative distribution function
+    if(Pr == NULL || s == NULL || cdf == NULL) {
+        cerr << "Failed to allocate memory!\n";
+        return 1;
+    }
 
     cout << "The original Histogram\n";
     this->GetHist(image, hist);
 
+    // Calculate probability of occurrence on each value of the histogram.
     for (int i = 0; i <= Q; i++) {
-        pdf[i] = float(hist.GetHistData(i)) / float(M*N);
+        Pr[i] = float(hist.GetHistData(i)) / float(M*N);
     }
 
-    // Compute the CDF (Cumulative Distribution Function)
-    cdf[0] = pdf[0];
+    // Compute the Cumulative Distribution Function (CDF)
+    cdf[0] = Pr[0];
     for (int i = 1; i <= Q; i++) {
-        cdf[i] = cdf[i - 1] + pdf[i];
+        cdf[i] = cdf[i - 1] + Pr[i];
     }
 
     // Scale the CDF values to the range [0, Q-1]
@@ -140,6 +152,7 @@ int ImageProcessing::HisEqualization(ImageType& image) {
         s[i] = round((Q - 1) * cdf[i]);
     }
 
+    // Map the equalized pixel intensity back to the image
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < M; j++) {
             image.GetPixelVal(i, j, val);
@@ -147,12 +160,14 @@ int ImageProcessing::HisEqualization(ImageType& image) {
         }
     }
 
+    cout << "Done Processing Image\n\n";
+
     hist.Clear();
 
     cout << "The equalized Histogram\n";
     this->GetHist(image, hist);    
 
-    free(pdf);
+    free(Pr);
     free(s);
     free(cdf);
     return 0;
