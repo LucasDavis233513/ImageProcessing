@@ -1,13 +1,10 @@
-# ComputerVisionRepo
-This repo will hold the tools to preform computer vision related tasks.
-
-## Image Processing
+# Image Processing
 This section will explain the various image processing tasks needed to be performed before any computer vison related operation can be preformed.
 
-### ImageProcessing.h
+## ImageProcessing.h
 This class will hold all the functions necessary to processes an image
 
-#### Write Image
+### Write Image
 This is a method of the ImageProcessing class that writes an image to a file.
    - Parameters:
      - char *fname: C-style string representing the filename where the image is to be saved.
@@ -17,7 +14,7 @@ This is a method of the ImageProcessing class that writes an image to a file.
      - 1 when it failed to open/create the file
      - 2 when it failed to write the image
 
-#### Read Image
+### Read Image
 This is a method of the ImageProcessing class that Reads an image to a file.
    - Parameters:
      - char *fname: C-style string representing the filename of the image.
