@@ -23,7 +23,7 @@ class ImageType {
 
     void GetImageInfo(int&, int&, int&);
     void SetImageInfo(int, int, int);
-    void GetPixelVal(int, int, int&);
+    int GetPixelVal(int, int);
     void SetPixelVal(int, int, int);
 
     int WriteImage();                       // Write an image to a file

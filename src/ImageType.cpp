@@ -100,12 +100,12 @@ void ImageType::SetImageInfo(int rows, int cols, int levels) {
     }
 }
 
-void ImageType::GetPixelVal(int i, int j, int &val) {
-    val = this->pixelValue[i][j];
+int ImageType::GetPixelVal(int i, int j) {
+    return this->pixelValue[i][j];
 }
 
-void ImageType::SetPixelVal(int i, int j, int val) {
-    this->pixelValue[i][j] = val;
+void ImageType::SetPixelVal(int i, int j, int sum) {
+    this->pixelValue[i][j] = sum;
 }
 
 // Write an image to a file
@@ -131,7 +131,7 @@ int ImageType::WriteImage() {
     // Convert integer values to unsigned char
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < M; j++) {
-            this->GetPixelVal(i, j, val);
+            val = this->GetPixelVal(i, j);
             charImage[i*M+j] = (unsigned char)val;
         }
     }

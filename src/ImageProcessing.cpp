@@ -13,7 +13,7 @@ void ImageProcessing::GetHist(ImageType& image, Histogram &hist) {
     // Find the occurance of each pixel value and update the Histogram
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < M; j++) {
-            image.GetPixelVal(i, j, val);
+            val = image.GetPixelVal(i, j);
 
             hist.SetHistData(val);
         }
@@ -44,7 +44,7 @@ int ImageProcessing::Sample(int factor, ImageType& image) {
     // Subsample the image
     for (int i = 0; i < subN; i++) {
         for (int j = 0; j < subM; j++) {
-            image.GetPixelVal(i * factor, j * factor, val);
+            val = image.GetPixelVal(i * factor, j * factor);
             charImage[i * subM + j] = (unsigned char)val;
         }
     }
@@ -104,7 +104,7 @@ int ImageProcessing::Quantization(int levels, ImageType& image) {
     // Loop through each pixel value of a given image
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < M; j++) {
-            image.GetPixelVal(i, j, val);
+            val = image.GetPixelVal(i, j);
 
             // Apply the Quantization formula to get the new intensity value
             Qx = static_cast<int>(val / delta) * delta + (delta / 2);
@@ -155,7 +155,7 @@ int ImageProcessing::HisEqualization(ImageType& image) {
     // Map the equalized pixel intensity back to the image
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < M; j++) {
-            image.GetPixelVal(i, j, val);
+            val = image.GetPixelVal(i, j);
             image.SetPixelVal(i, j, s[val]);
         }
     }
@@ -173,6 +173,43 @@ int ImageProcessing::HisEqualization(ImageType& image) {
     return 0;
 }
 
-int ImageProcessing::HisSpecification(ImageType& image) {
+// _______________________________________________________________________________
+
+// Preform a Correlation filter between an image and a mask
+int ImageProcessing::Correlation(ImageType& image, ImageType& map) {
+    // g(i,j)=w(s,t)*f(i,j)=\sum\limits_{s=-K/2}^{K/2}\sum\limits_{t=K/2}^{K/2} w(s,t)f(i-s, j-t)
+    int N, M, Q, a, b;                    // Rows, Colummns, Gery Level, and pixel value
+    image.GetImageInfo(N, M, Q);
+
+    int mapN, mapM, mapQ;
+    map.GetImageInfo(mapN, mapM, mapQ);
+
+    // for r = 1:m
+    //     for c = 1:n
+    //         J(r, c) = 0
+    //         for u = -h:h
+    //             for v = -h:h
+    //                 J(r, c) = J(r, c) + T(u, v) * I(r+u, c+v)
+
+    a = mapN / 2;
+    b = mapM / 2;
+
+    // Perform correlation between the mask and the padded image
+    for (int i = 0; i < N - 1; i++) {
+        for (int j = 0; j < M - 1; j++) {
+            int sum = 0;
+
+            // Sliding window for the mask
+            for (int s = -a; s < a; s++) {
+                for (int t = -b; t < -b; t++) {
+                    sum += map.GetPixelVal(s, t) * image.GetPixelVal(i - s, j - t);
+                }
+            }
+
+            // Store the result of correlation at position (i, j)
+            image.SetPixelVal(i, j, sum);
+        }
+    }
+
     return 0;
 }

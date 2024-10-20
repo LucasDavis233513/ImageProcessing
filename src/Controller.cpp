@@ -7,10 +7,16 @@
 
 using namespace std;
 
-char Menu() {
-	char choice;
+int main() {
+    ImageType image;
+    ImageType mask;
+    ImageProcessing process;
 
-	cout << endl;
+    bool running = true;
+    char choice;
+    int factor, levels;
+    
+    cout << endl;
 	cout << "--------------------------------------------------------" << endl;
 	cout << "\t\tMain Menu\n";
 	cout << "--------------------------------------------------------" << endl;
@@ -18,29 +24,18 @@ char Menu() {
 	cout << "\ta  :  Sample\n";
 	cout << "\tb  :  Quantization\n";
 	cout << "\tc  :  Histogram Equalization\n";
-	cout << "\td  :  Histogram Specification\n";
+	cout << "\td  :  Correlation\n";
     cout << "\tr  :  Open an Image\n";
     cout << "\tw  :  Write an Image\n";
 	cout << "\tq  :  Quit the program\n";
+    cout << "--------------------------------------------------------" << endl;
 	cout << endl;
-	cout << "--------------------------------------------------------" << endl;
-	cout << "Enter your choice [ a - d or q ]:\n";
-	cout << "--------------------------------------------------------" << endl;
-	cin >> choice ;
-
-	return choice;
-}
-
-int main() {
-    ImageType image;
-    ImageProcessing process;
-
-    int factor, levels;
-
-    bool running = true;
 
     do {
-        switch(Menu()) {
+	    cout << "Enter your choice [ a - d or q ]: ";
+        cin >> choice;
+
+        switch(choice) {
             case 'a':
                 cout << "Preforming Sample method...\n";
                 cout << "By what factor? ";
@@ -63,7 +58,12 @@ int main() {
                 process.HisEqualization(image);
                 break;
             case 'd':
-                process.HisSpecification(image);
+                cout << "Preforming Correlation...\n";
+                cout << "Please specify the mask: ";
+                mask.ReadImage();
+
+                process.Correlation(image, mask);
+
                 break;
             case 'r':
                 cout << "Opening an image file...\n";
