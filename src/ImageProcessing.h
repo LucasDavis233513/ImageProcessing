@@ -30,6 +30,8 @@ class ImageProcessing {
       int Correlation(ImageType&, ImageType&);     // Preform a Correlation filter between an image and a mask
       int Smoothing(ImageType&, float*, int);      // Preform smoothing based on the filter passed to it.
       int Median(ImageType&);                      // Preform median filtering
+      int Sharpen(ImageType&, float*, float*);
+      int SharpenWithLaplacian(ImageType&);
 
       float* CreateFilter(string, int);            // Create a smoothing filter
       int SaltandPepperImage(ImageType&, int);     // Randomly changes pixel values to black or white

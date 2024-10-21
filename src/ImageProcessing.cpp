@@ -246,7 +246,6 @@ int ImageProcessing::Smoothing(ImageType& image, float* filter, int size) {
         }
     }
 
-    delete[] filter;
     delete[] buffer;
 
     return 0;
@@ -291,6 +290,103 @@ int ImageProcessing::Median(ImageType& image) {
 
     delete[] buffer;
 
+    return 0;
+}
+
+int ImageProcessing::Sharpen(ImageType& image, float* xMask, float* yMask) {
+    int N, M, Q;
+    image.GetImageInfo(N, M, Q);
+    ImageType gradient_x(N, M, Q);
+    ImageType gradient_y(N, M, Q);
+
+    // Apply Prewitt filters to compute gradients
+    for (int i = 1; i < N - 1; i++) { // Loop through pixels avoiding borders
+        for (int j = 1; j < M - 1; j++) {
+            float gx = 0.0f;
+            float gy = 0.0f;
+
+            // Convolve the Prewitt kernels with the image
+            for (int k = -1; k <= 1; k++) {
+                for (int l = -1; l <= 1; l++) {
+                    gx += xMask[(k + 1) * 3 + (l + 1)] * image.GetPixelVal(i + k, j + l);
+                    gy += yMask[(k + 1) * 3 + (l + 1)] * image.GetPixelVal(i + k, j + l);
+                }
+            }
+
+            // Store the computed gradients directly (no inversion)
+            gradient_x.SetPixelVal(i, j, static_cast<unsigned char>(std::clamp(gx, 0.0f, 255.0f)));
+            gradient_y.SetPixelVal(i, j, static_cast<unsigned char>(std::clamp(gy, 0.0f, 255.0f)));
+        }
+    }
+
+    // Calculate the final image based on the gradient magnitudes
+    unsigned char* buffer = new unsigned char[N * M];
+
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            int gx = gradient_x.GetPixelVal(i, j);
+            int gy = gradient_y.GetPixelVal(i, j);
+            float magnitude = sqrt(gx * gx + gy * gy);
+
+            // Thresholding to reduce noise
+            unsigned char pixelValue = (magnitude > 50) ? static_cast<unsigned char>(std::clamp(magnitude, 0.0f, 255.0f)) : 0;
+
+            // Keep the final image non-inverted
+            buffer[i * M + j] = pixelValue; // Use pixelValue directly, no inversion
+        }
+    }
+
+    // Set the computed final image
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            image.SetPixelVal(i, j, buffer[i * M + j]);
+        }
+    }
+
+    // Write the gradient images
+    cout << "Writing the x gradient...\n";
+    gradient_x.WriteImage();
+
+    cout << "Writing the y gradient...\n";
+    gradient_y.WriteImage();
+
+    delete[] buffer;
+    return 0;
+}
+
+int ImageProcessing::SharpenWithLaplacian(ImageType& image) {
+    int N, M, Q;
+    image.GetImageInfo(N, M, Q);
+
+    float laplacian[9] = { 0, 1, 0, 1, -4, 1, 0, 1, 0 };
+    unsigned char* buffer = new unsigned char[N * M];
+
+    // Apply the Laplacian filter
+    int offset = 1; // For a 3x3 filter
+    for (int i = offset; i < N - offset; i++) {
+        for (int j = offset; j < M - offset; j++) {
+            float sum = 0.0f;
+
+            // Slide the filter over the image
+            for (int s = 0; s < 3; s++) {
+                for (int t = 0; t < 3; t++) {
+                    sum += image.GetPixelVal(i - offset + s, j - offset + t) * laplacian[s * 3 + t];
+                }
+            }
+
+            // Thresholding the result
+            buffer[i * M + j] = (std::abs(sum) > 30) ? static_cast<unsigned char>(std::clamp(sum + image.GetPixelVal(i, j), 0.0f, 255.0f)) : 0; // Only keep strong edges
+        }
+    }
+
+    // Set the results of the buffer to the image
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            image.SetPixelVal(i, j, buffer[i * M + j]);
+        }
+    }
+
+    delete[] buffer;
     return 0;
 }
 

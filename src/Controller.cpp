@@ -16,6 +16,14 @@ int main() {
     char choice;
     int factor, levels, size, precentage;
 
+    // Prewitt kernels
+    float prewitt_x[9] = { -1, 0, 1, -1, 0, 1, -1, 0, 1 }; // Horizontal
+    float prewitt_y[9] = { -1, -1, -1, 0, 0, 0, 1, 1, 1 }; // Vertical
+    
+    // Sobel kernels
+    float sobel_x[9] = { -1, 0, 1, -2, 0, 2, -1, 0, 1 }; // Horizontal
+    float sobel_y[9] = { 1, 2, 1, 0, 0, 0, -1, -2, -1 }; // Vertical
+
     cout << endl;
 	cout << "--------------------------------------------------------" << endl;
 	cout << "\t\tMain Menu\n";
@@ -29,6 +37,9 @@ int main() {
     cout << "\tf  :  Guassian\n";
     cout << "\tg  :  Median\n";
     cout << "\th  :  Salt and Pepper Image\n";
+    cout << "\ti  :  Sharpen with Prewitt\n";
+    cout << "\tj  :  Sharepen with Sobel\n";
+    cout << "\tk  :  Sharpend with Laplacian\n";
     cout << "\tr  :  Open an Image\n";
     cout << "\tw  :  Write an Image\n";
 	cout << "\tq  :  Quit the program\n";
@@ -94,6 +105,21 @@ int main() {
                 cin >> precentage;
 
                 process.SaltandPepperImage(image, precentage);
+                break;
+            case 'i':
+                cout << "Sharpen with Prewitt...\n";
+
+                process.Sharpen(image, prewitt_x, prewitt_y);
+                break;
+            case 'j':
+                cout << "Sharpen with Sobel...\n";
+
+                process.Sharpen(image, sobel_x, sobel_y);
+                break;
+            case 'k':
+                cout << "Sharpen with Laplacian...\n";
+
+                process.SharpenWithLaplacian(image);
                 break;
             case 'r':
                 cout << "Opening an image file...\n";
