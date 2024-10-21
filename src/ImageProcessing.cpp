@@ -76,7 +76,7 @@ int ImageProcessing::Sample(int factor, ImageType& image) {
 
             // Calculate the bilinear interpolation of the image using the equation
             // I(x, y) = ax + by + cxy + d
-            val = 
+            val =
                 topLeft * fractionalX +                     // ax
                 topRight * fractionalY +                    // by
                 bottomLeft * fractionalX * fractionalY +    // cxy
@@ -165,7 +165,7 @@ int ImageProcessing::HisEqualization(ImageType& image) {
     hist.Clear();
 
     cout << "The equalized Histogram\n";
-    this->GetHist(image, hist);    
+    this->GetHist(image, hist);
 
     free(Pr);
     free(s);
@@ -175,39 +175,180 @@ int ImageProcessing::HisEqualization(ImageType& image) {
 
 // _______________________________________________________________________________
 
-// Preform a Correlation filter between an image and a mask
-int ImageProcessing::Correlation(ImageType& image, ImageType& map) {
-    // g(i,j)=w(s,t)*f(i,j)=\sum\limits_{s=-K/2}^{K/2}\sum\limits_{t=K/2}^{K/2} w(s,t)f(i-s, j-t)
-    int N, M, Q, a, b;                    // Rows, Colummns, Gery Level, and pixel value
-    image.GetImageInfo(N, M, Q);
+int ImageProcessing::Correlation(ImageType& image, ImageType& kernel) {
+    int N, M, Q, kN, kM, kQ;
+    image.GetImageInfo(N, M, Q);    // Get image dimensions
+    kernel.GetImageInfo(kN, kM, kQ); // Get kernel dimensions
 
-    int mapN, mapM, mapQ;
-    map.GetImageInfo(mapN, mapM, mapQ);
+    unsigned char* buffer = new unsigned char[N * M](); // Buffer to store results
 
-    // for r = 1:m
-    //     for c = 1:n
-    //         J(r, c) = 0
-    //         for u = -h:h
-    //             for v = -h:h
-    //                 J(r, c) = J(r, c) + T(u, v) * I(r+u, c+v)
+    // Iterate over the image pixels
+    for (int i = kN / 2; i < N - kN / 2; i++) {
+        for (int j = kM / 2; j < M - kM / 2; j++) {
+            int sum = 0; // Use int to prevent overflow
 
-    a = mapN / 2;
-    b = mapM / 2;
-
-    // Perform correlation between the mask and the padded image
-    for (int i = 0; i < N - 1; i++) {
-        for (int j = 0; j < M - 1; j++) {
-            int sum = 0;
-
-            // Sliding window for the mask
-            for (int s = -a; s < a; s++) {
-                for (int t = -b; t < -b; t++) {
-                    sum += map.GetPixelVal(s, t) * image.GetPixelVal(i - s, j - t);
+            // Apply kernel
+            for (int s = 0; s < kN; s++) {
+                for (int t = 0; t < kM; t++) {
+                    sum += image.GetPixelVal(i - kN / 2 + s, j - kM / 2 + t) * kernel.GetPixelVal(s, t);
                 }
             }
 
-            // Store the result of correlation at position (i, j)
-            image.SetPixelVal(i, j, sum);
+            // Store the result directly, without clamping or normalizing
+            buffer[i * M + j] = static_cast<unsigned char>(sum); // Cast to unsigned char
+        }
+    }
+
+    // Transfer the results from buffer to image
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            image.SetPixelVal(i, j, buffer[i * M + j]);
+        }
+    }
+
+    delete[] buffer; // Free allocated memory
+    return 0;
+}
+
+// Preform smoothing based on the filter passed to it
+int ImageProcessing::Smoothing(ImageType& image, float* filter, int size) {
+    int N, M, Q;
+    float sum;
+    image.GetImageInfo(N, M, Q);
+
+    unsigned char* buffer = (unsigned char*)new unsigned char [N * M];
+
+    // Calculate the offset based on the filter size
+    int offset = size / 2;
+
+    // For each pixel in the original image
+    for (int i = offset; i < N - offset; i++) { // Start at offset, end at N - offset
+        for (int j = offset; j < M - offset; j++) { // Start at offset, end at M - offset
+            sum = 0.0f;
+
+            // Slide the filtering mask over the image and compute the sum
+            for (int s = 0; s < size; s++) {
+                for (int t = 0; t < size; t++) {
+                    // Calculate the pixel index based on the filter
+                    sum += image.GetPixelVal(i - offset + s, j - offset + t) * filter[s * size + t];
+                }
+            }
+
+            // Store the result in the buffer
+            buffer[i * M + j] = static_cast<unsigned char>(sum);
+        }
+    }
+
+    // Set the results of the buffer to the image
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            image.SetPixelVal(i, j, buffer[i * M + j]);
+        }
+    }
+
+    delete[] filter;
+    delete[] buffer;
+
+    return 0;
+}
+
+// Preform median filtering
+int ImageProcessing::Median(ImageType& image) {
+    int N, M, Q;
+    image.GetImageInfo(N, M, Q);
+
+    unsigned char* buffer = new unsigned char[N * M]; // Allocate memory for the new image
+
+    // For each pixel in the original image, avoiding the edges
+    for (int i = 1; i < N - 1; i++) { // Start from 1 to N - 1 to avoid edges
+        for (int j = 1; j < M - 1; j++) { // Start from 1 to M - 1 to avoid edges
+
+            // Create an array to hold the neighboring pixels
+            unsigned char temp[9];
+            int index = 0;
+
+            // Gather neighboring pixels using four loops
+            for (int s = -1; s <= 1; s++) {
+                for (int t = -1; t <= 1; t++) {
+                    temp[index++] = image.GetPixelVal(i + s, j + t);
+                }
+            }
+
+            // Sort the array to find the median
+            sort(temp, temp + 9);
+
+            // Set the median value (the middle one in sorted order)
+            buffer[i * M + j] = temp[4]; // The median value
+        }
+    }
+
+    // Set the results of the buffer to the image
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            image.SetPixelVal(i, j, buffer[i * M + j]);
+        }
+    }
+
+    delete[] buffer;
+
+    return 0;
+}
+
+float* ImageProcessing::CreateFilter(string type, int size) {
+    float* filter = new float[size * size]; // Allocate memory based on the factor
+
+    // Create an averaging filter
+    if (type == "averaging") {
+        float value = 1.0f / (size * size);
+
+        for (int i = 0; i < size * size; i ++) {
+            filter[i] = value;
+        }
+    } else if (type == "gaussian") { // Create a Guasian filtr
+        float sigma = size / 6.0f;
+        float sum = 0.0f;
+        int center = size / 2; // Calculate the center index
+
+        for (int y = -center; y <= center; y++) {
+            for (int x = -center; x <= center; x++) {
+                float value = (1.0f / (2.0f * M_PI * sigma * sigma)) *
+                              exp(-(x * x + y * y) / (2.0f * sigma * sigma));
+                filter[(y + center) * size + (x + center)] = value;
+                sum += value; // Sum for normalization
+            }
+        }
+
+        // Normalize the filter values
+        for (int i = 0; i < size * size; i++) {
+            filter[i] /= sum; // Normalize to sum to 1
+        }
+    } else {
+        cerr << "Unexpected type";
+    }
+
+    return filter;
+}
+
+int ImageProcessing::SaltandPepperImage(ImageType& image, int percentage) {
+    int N, M, Q;
+    image.GetImageInfo(N, M, Q);
+
+    int numPixelsToAlter = (percentage * (N * M)) / 100;
+
+    // Seed the random number generator
+    std::srand(static_cast<unsigned int>(time(nullptr)));
+
+    for (int i = 0; i < numPixelsToAlter; ++i) {
+        // Generate random coordinates within the image
+        int x = rand() % N;
+        int y = rand() % M;
+
+        // Randomly decide whether to set the pixel to black or white
+        // Here, we consider 0 as black and 255 as white
+        if (rand() % 2 == 0) {
+            image.SetPixelVal(x, y, 255);
+        } else {
+            image.SetPixelVal(x, y, 0);
         }
     }
 

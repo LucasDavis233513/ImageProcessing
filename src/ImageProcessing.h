@@ -5,6 +5,9 @@
 #include <iostream>
 #include <stdlib.h>
 #include <cmath>
+#include <algorithm>
+#include <cstdlib>
+#include <ctime>
 
 #include "ImageType.h"
 #include "Histogram.h"
@@ -17,7 +20,7 @@ class ImageProcessing {
     public:
       ImageProcessing();
       ~ImageProcessing();
-      
+
       // Assignment 1
       int Sample(int, ImageType&);                 // Change the Saptial resolution of an Image
       int Quantization(int, ImageType&);           // Change the grey levels in an image
@@ -25,6 +28,11 @@ class ImageProcessing {
 
       // Assignment 2
       int Correlation(ImageType&, ImageType&);     // Preform a Correlation filter between an image and a mask
+      int Smoothing(ImageType&, float*, int);      // Preform smoothing based on the filter passed to it.
+      int Median(ImageType&);                      // Preform median filtering
+
+      float* CreateFilter(string, int);            // Create a smoothing filter
+      int SaltandPepperImage(ImageType&, int);     // Randomly changes pixel values to black or white
 };
 
 #endif

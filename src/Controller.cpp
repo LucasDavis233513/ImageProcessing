@@ -14,8 +14,8 @@ int main() {
 
     bool running = true;
     char choice;
-    int factor, levels;
-    
+    int factor, levels, size, precentage;
+
     cout << endl;
 	cout << "--------------------------------------------------------" << endl;
 	cout << "\t\tMain Menu\n";
@@ -25,6 +25,10 @@ int main() {
 	cout << "\tb  :  Quantization\n";
 	cout << "\tc  :  Histogram Equalization\n";
 	cout << "\td  :  Correlation\n";
+    cout << "\te  :  Averaging\n";
+    cout << "\tf  :  Guassian\n";
+    cout << "\tg  :  Median\n";
+    cout << "\th  :  Salt and Pepper Image\n";
     cout << "\tr  :  Open an Image\n";
     cout << "\tw  :  Write an Image\n";
 	cout << "\tq  :  Quit the program\n";
@@ -64,6 +68,32 @@ int main() {
 
                 process.Correlation(image, mask);
 
+                break;
+            case 'e':
+                cout << "Preforming Averaging...\n";
+                cout << "What is the size of the filter? (7x7 = 7) ";
+                cin >> size;
+
+                process.Smoothing(image, process.CreateFilter("averaging", size), size);
+                break;
+            case 'f':
+                cout << "Preforming Gaussian smoothing...\n";
+                cout << "What is the size of the filter? (7x7 = 7) ";
+                cin >> size;
+
+                process.Smoothing(image, process.CreateFilter("gaussian", size), size);
+                break;
+            case 'g':
+                cout << "Preforming Median filtering...\n";
+
+                process.Median(image);
+                break;
+            case 'h':
+                cout << "Salt and Peppering an image...\n";
+                cout << "By what precentage: ";
+                cin >> precentage;
+
+                process.SaltandPepperImage(image, precentage);
                 break;
             case 'r':
                 cout << "Opening an image file...\n";
