@@ -32,16 +32,20 @@ int main() {
 	cout << "\ta  :  Sample\n";
 	cout << "\tb  :  Quantization\n";
 	cout << "\tc  :  Histogram Equalization\n";
+    cout << "\n";
 	cout << "\td  :  Correlation\n";
     cout << "\te  :  Averaging\n";
     cout << "\tf  :  Guassian\n";
     cout << "\tg  :  Median\n";
-    cout << "\th  :  Salt and Pepper Image\n";
-    cout << "\ti  :  Sharpen with Prewitt\n";
-    cout << "\tj  :  Sharepen with Sobel\n";
-    cout << "\tk  :  Sharpend with Laplacian\n";
+    cout << "\th  :  Sharpen with Prewitt\n";
+    cout << "\ti  :  Sharpen with Sobel\n";
+    cout << "\tj  :  Sharpen with Laplacian\n";
+    cout << "\n";
+    cout << "\tk  :  Salt and Pepper Image\n";
+    cout << "\n";
     cout << "\tr  :  Open an Image\n";
     cout << "\tw  :  Write an Image\n";
+    cout << "\n";
 	cout << "\tq  :  Quit the program\n";
     cout << "--------------------------------------------------------" << endl;
 	cout << endl;
@@ -100,26 +104,26 @@ int main() {
                 process.Median(image);
                 break;
             case 'h':
+                cout << "Sharpen with Prewitt...\n";
+
+                process.Sharpen(image, prewitt_x, prewitt_y);
+                break;
+            case 'i':
+                cout << "Sharpen with Sobel...\n";
+
+                process.Sharpen(image, sobel_x, sobel_y);
+                break;
+            case 'j':
+                cout << "Sharpen with Laplacian...\n";
+
+                process.SharpenWithLaplacian(image);
+                break;
+            case 'k':
                 cout << "Salt and Peppering an image...\n";
                 cout << "By what precentage: ";
                 cin >> precentage;
 
                 process.SaltandPepperImage(image, precentage);
-                break;
-            case 'i':
-                cout << "Sharpen with Prewitt...\n";
-
-                process.Sharpen(image, prewitt_x, prewitt_y);
-                break;
-            case 'j':
-                cout << "Sharpen with Sobel...\n";
-
-                process.Sharpen(image, sobel_x, sobel_y);
-                break;
-            case 'k':
-                cout << "Sharpen with Laplacian...\n";
-
-                process.SharpenWithLaplacian(image);
                 break;
             case 'r':
                 cout << "Opening an image file...\n";

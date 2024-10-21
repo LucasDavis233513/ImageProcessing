@@ -17,6 +17,7 @@ using namespace std;
 class ImageProcessing {
     private:
       void GetHist(ImageType&, Histogram&); // Get the histogram from an image and save it to a pgm file
+      float clamp(float, float, float);
     public:
       ImageProcessing();
       ~ImageProcessing();

@@ -22,6 +22,12 @@ void ImageProcessing::GetHist(ImageType& image, Histogram &hist) {
     hist.SaveHistImg();
 }
 
+float ClampValues(float value, float min, float max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+}
+
 // Public Methods
 // Question 1
 // Change the spatial resolution of an image by sub-sampling by a defined factor
@@ -176,21 +182,24 @@ int ImageProcessing::HisEqualization(ImageType& image) {
 // _______________________________________________________________________________
 
 int ImageProcessing::Correlation(ImageType& image, ImageType& kernel) {
-    int N, M, Q, kN, kM, kQ;
+    int N, M, Q, kN, kM, kQ, a, b;
     image.GetImageInfo(N, M, Q);    // Get image dimensions
     kernel.GetImageInfo(kN, kM, kQ); // Get kernel dimensions
 
     unsigned char* buffer = new unsigned char[N * M](); // Buffer to store results
 
+    a = kN / 2;
+    b = kM / 2;
+
     // Iterate over the image pixels
-    for (int i = kN / 2; i < N - kN / 2; i++) {
-        for (int j = kM / 2; j < M - kM / 2; j++) {
+    for (int i = a; i < N - a; i++) {
+        for (int j = b; j < M - b; j++) {
             int sum = 0; // Use int to prevent overflow
 
             // Apply kernel
             for (int s = 0; s < kN; s++) {
                 for (int t = 0; t < kM; t++) {
-                    sum += image.GetPixelVal(i - kN / 2 + s, j - kM / 2 + t) * kernel.GetPixelVal(s, t);
+                    sum += image.GetPixelVal(i - a + s, j - b + t) * kernel.GetPixelVal(s, t);
                 }
             }
 
@@ -314,8 +323,8 @@ int ImageProcessing::Sharpen(ImageType& image, float* xMask, float* yMask) {
             }
 
             // Store the computed gradients directly (no inversion)
-            gradient_x.SetPixelVal(i, j, static_cast<unsigned char>(std::clamp(gx, 0.0f, 255.0f)));
-            gradient_y.SetPixelVal(i, j, static_cast<unsigned char>(std::clamp(gy, 0.0f, 255.0f)));
+            gradient_x.SetPixelVal(i, j, static_cast<unsigned char>(ClampValues(gx, 0.0f, 255.0f)));
+            gradient_y.SetPixelVal(i, j, static_cast<unsigned char>(ClampValues(gy, 0.0f, 255.0f)));
         }
     }
 
@@ -329,7 +338,7 @@ int ImageProcessing::Sharpen(ImageType& image, float* xMask, float* yMask) {
             float magnitude = sqrt(gx * gx + gy * gy);
 
             // Thresholding to reduce noise
-            unsigned char pixelValue = (magnitude > 50) ? static_cast<unsigned char>(std::clamp(magnitude, 0.0f, 255.0f)) : 0;
+            unsigned char pixelValue = (magnitude > 50) ? static_cast<unsigned char>(ClampValues(magnitude, 0.0f, 255.0f)) : 0;
 
             // Keep the final image non-inverted
             buffer[i * M + j] = pixelValue; // Use pixelValue directly, no inversion
@@ -375,7 +384,7 @@ int ImageProcessing::SharpenWithLaplacian(ImageType& image) {
             }
 
             // Thresholding the result
-            buffer[i * M + j] = (std::abs(sum) > 30) ? static_cast<unsigned char>(std::clamp(sum + image.GetPixelVal(i, j), 0.0f, 255.0f)) : 0; // Only keep strong edges
+            buffer[i * M + j] = (std::abs(sum) > 30) ? static_cast<unsigned char>(ClampValues(sum + image.GetPixelVal(i, j), 0.0f, 255.0f)) : 0; // Only keep strong edges
         }
     }
 
@@ -431,8 +440,9 @@ int ImageProcessing::SaltandPepperImage(ImageType& image, int percentage) {
 
     int numPixelsToAlter = (percentage * (N * M)) / 100;
 
+    unsigned int seed = 123;
     // Seed the random number generator
-    std::srand(static_cast<unsigned int>(time(nullptr)));
+    srand(seed);
 
     for (int i = 0; i < numPixelsToAlter; ++i) {
         // Generate random coordinates within the image
