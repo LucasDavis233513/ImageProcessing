@@ -384,7 +384,7 @@ int ImageProcessing::SharpenWithLaplacian(ImageType& image) {
             }
 
             // Thresholding the result
-            buffer[i * M + j] = (std::abs(sum) > 30) ? static_cast<unsigned char>(ClampValues(sum + image.GetPixelVal(i, j), 0.0f, 255.0f)) : 0; // Only keep strong edges
+            buffer[i * M + j] = (abs(sum) > 30) ? static_cast<unsigned char>(ClampValues(sum + image.GetPixelVal(i, j), 0.0f, 255.0f)) : 0; // Only keep strong edges
         }
     }
 
