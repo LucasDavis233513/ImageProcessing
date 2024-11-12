@@ -16,7 +16,13 @@ int main() {
     char choice;
     int factor, levels, size, precentage;
 
-    float f[4] = {2, 3, 4, 4};
+    float f[9] = {0, 2, 0, 3, 0, 4, 0, 4};
+
+    int N = 128;
+    double u = 8;
+
+    float wave[N];
+    float paddedWave[N*2];
 
     // Prewitt kernels
     float prewitt_x[9] = { -1, 0, 1, -1, 0, 1, -1, 0, 1 }; // Horizontal
@@ -46,7 +52,8 @@ int main() {
     cout << "\tk  :  Salt and Pepper Image\n";
     cout << "\n";
     cout << "\tl  :  1D Fast Fourier Transform\n";
-    cout << "\tm  :  2D Fast Fourier Transform\n";
+    cout << "\tm  :  1D FFT on Cosine function\n";
+    cout << "\tn  :  1D FFT with a rectangle function\n";
     cout << "\n";
     cout << "\tr  :  Open an Image\n";
     cout << "\tw  :  Write an Image\n";
@@ -131,33 +138,37 @@ int main() {
                 process.SaltandPepperImage(image, precentage);
                 break;
             case 'l':
-                printf("Preforming a Fast Fourier Transform on the 1D array: ");
-
-                for (int i = 0; i < sizeof(f)/sizeof(f[0]); i++) {
-                    printf("%f ", f[i]);
-                }
-                printf("\n");
+                printf("Preforming a Fast Fourier Transform on the 1D array:\n");
 
                 process.fft1D(f, 4, -1);    // Preform the forward transform
                 process.NormalizeFFT(f, 4); // Normalize by 1 / N
 
-                for (int i = 0; i < sizeof(f)/sizeof(f[0]); i++) {
-                    printf("%f ", f[i]);
-                }
-
-                printf("\n");
+                process.PlotValues(f, 8);
 
                 process.fft1D(f, 4, 1);     // Preform the inverse transform
 
-                for (int j = 0; j < sizeof(f)/sizeof(f[0]); j++) {
-                    printf("%f ", f[j]);
+                for (int i = 0; i < 8; i++) {
+                    printf("%f ", f[i]);
                 }
-
                 printf("\n");
 
                 break;
             case 'm':
-                cout << "Preforming the Fast Fourier Transform on a 2D Image\n";
+                printf("Preforming the fft transform on a cosine wave...\n");
+
+                process.GenerateCosineWave(wave, N, u);
+                process.ShiftFrequencyToCenter(wave, u);
+
+                process.PadArray(paddedWave, wave, N);
+
+                process.PlotWave(wave, N);
+
+                process.fft1D(paddedWave, N, -1);
+
+                process.PlotValues(paddedWave, N * 2);
+
+                break;
+            case 'n':
                 break;
             case 'r':
                 cout << "Opening an image file...\n";

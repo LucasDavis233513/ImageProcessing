@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <cstdlib>
 #include <ctime>
+#include <cstdio>
+#include <vector>
 
 #include "ImageType.h"
 #include "Histogram.h"
@@ -17,6 +19,10 @@ using namespace std;
 class ImageProcessing {
     private:
       void GetHist(ImageType&, Histogram&); // Get the histogram from an image and save it to a pgm file
+
+      double ComputeMagnitude(float, float);       // Compute the magnitude of the real and imaginary parts of
+                                                   // the fourier transform
+
       float clamp(float, float, float);
     public:
       ImageProcessing();
@@ -38,8 +44,15 @@ class ImageProcessing {
       int SaltandPepperImage(ImageType&, int);     // Randomly changes pixel values to black or white
 
       // Assignment 3
-      int NormalizeFFT(float*, unsigned long);     // Normalize the forward FFT
+      int PadArray(float*, float*, int N);
 
+      void PlotValues(float*, int);                     // PLot the Real, imaginary, and magnitude
+      void PlotWave(float*, int);
+
+      int GenerateCosineWave(float*, int, double);
+      int ShiftFrequencyToCenter(float*, int);
+
+      int NormalizeFFT(float*, unsigned long);     // Normalize the forward FFT
       int fft1D(float*, unsigned long, int);       // Preform the Fast Fourier Transformation on a 1D object (code provided by the teacher)
       int fft2D(ImageType& image);                 // Preform the Fast Fourier Transformation on an Image
 };

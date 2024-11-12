@@ -24,6 +24,10 @@ void ImageProcessing::GetHist(ImageType& image, Histogram &hist) {
     hist.SaveHistImg();
 }
 
+double ImageProcessing::ComputeMagnitude(float real, float imag) {
+    return sqrt(real * real + imag * imag);
+}
+
 float ClampValues(float value, float min, float max) {
     if (value < min) return min;
     if (value > max) return max;
@@ -472,18 +476,118 @@ int ImageProcessing::SaltandPepperImage(ImageType& image, int percentage) {
 // ----------------------------------------------------------------------------------------------
 // Assignment 3
 // ----------------------------------------------------------------------------------------------
+// Padd a given array with zeros; zeros between each value, and one at the beginning and end of the array
+int ImageProcessing::PadArray(float padded[], float data[], int N) {
+    int paddedSize = 2 * N + 1;
+    int j = 0;
+
+    padded[j++] = 0.0f; 
+
+    for (int i = 0; i < N; ++i) {
+        padded[j++] = data[i];
+        if (j < paddedSize) {
+            padded[j++] = 0.0f;
+        }
+    }
+
+    padded[j] = 0.0f;
+
+    return 0;
+}
+
+// PLot the Real, imaginary, and magnitude
+// You will need to install gnuplot in order for this function to work
+void ImageProcessing::PlotValues(float values[], int N) {
+    vector<double> real;
+    vector<double> imag;
+    vector<double> magnitude;
+
+    for (int i = 0; i < N; i += 2) {
+        real.push_back(values[i]);
+        imag.push_back(values[i+1]);
+
+        magnitude.push_back(ComputeMagnitude(real[i], imag[i+1]));
+    }
+
+    FILE* gnuplotPipe = popen("gnuplot -persistent", "w");
+
+    fprintf(gnuplotPipe, "set multiplot layout 1,3\n");
+
+    // Plot real part
+    fprintf(gnuplotPipe, "set title 'Real Part'\n");
+    fprintf(gnuplotPipe, "plot '-' with linespoints title 'Real'\n");
+    for (int i = 0; i < 4; ++i) {
+        fprintf(gnuplotPipe, "%d %f\n", i, real[i]);
+    }
+    fprintf(gnuplotPipe, "e\n");
+
+    // Plot imaginary part
+    fprintf(gnuplotPipe, "set title 'Imaginary Part'\n");
+    fprintf(gnuplotPipe, "plot '-' with linespoints title 'Imaginary'\n");
+    for (int i = 0; i < 4; ++i) {
+        fprintf(gnuplotPipe, "%d %f\n", i, imag[i]);
+    }
+    fprintf(gnuplotPipe, "e\n");
+
+    // Plot magnitude
+    fprintf(gnuplotPipe, "set title 'Magnitude'\n");
+    fprintf(gnuplotPipe, "plot '-' with linespoints title 'Magnitude'\n");
+    for (int i = 0; i < 4; ++i) {
+        fprintf(gnuplotPipe, "%d %f\n", i, magnitude[i]);
+    }
+    fprintf(gnuplotPipe, "e\n");
+
+    pclose(gnuplotPipe);
+}
+
+// Plot the wave function generated
+// You will need to install gnuplot for this function to work
+void ImageProcessing::PlotWave(float wave[], int N) {
+    FILE* gnuplotPipe = popen("gnuplot -persistent", "w");
+
+    fprintf(gnuplotPipe, "set title 'Generated Cosine Wave'\n");
+    fprintf(gnuplotPipe, "plot '-' with lines title 'Wave'\n");
+
+    for (int i = 0; i < N; ++i) {
+        fprintf(gnuplotPipe, "%d %f\n", i, wave[i]);
+    }
+
+    fprintf(gnuplotPipe, "e\n");
+
+    pclose(gnuplotPipe);
+}
+
+// Generate a cosine wave
+int ImageProcessing::GenerateCosineWave(float wave[], int N, double u) {
+    for (int i = 0; i < N; i++) {
+        wave[i] = cos(2 * M_PI * u * i / N);
+    }
+
+    return 0;
+}
+
+// Shift the frequencies to the the center
+int ImageProcessing::ShiftFrequencyToCenter(float signal[], int N) {
+    for (int i = 0; i < N; i++) {
+        signal[i] *= pow(-1, i);
+    }
+
+    return 0;
+}
 
 // Normalize the FFT; this process only needs to be done on the forward FFT transform
 int ImageProcessing::NormalizeFFT(float data[], unsigned long nn) {
-    unsigned long i;
+    unsigned long n, i;
 
     if (!(nn % 2 == 0)) {
         cerr << "This method only works with inputs of even length";
         return 1;
     }
 
+    n = nn << 1;
+
     // Normalize the FFT by dividing each value by n
-    for (i = 0; i < nn; i++) {
+    for (i = 0; i < n; i++) {
         data[i] /= nn;
     }
 
