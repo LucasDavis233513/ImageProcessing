@@ -8,7 +8,7 @@ BLDDIR = bld
 
 OBJS = $(OBJDIR)/ImageType.o $(OBJDIR)/ImageProcessing.o $(OBJDIR)/Histogram.o
 IMAGE =  $(SRCDIR)/ImageType.h $(SRCDIR)/ImageType.cpp
-PROCESSING = $(SRCDIR)/ImageProcessing.h $(SRCDIR)/ImageProcessing.cpp
+PROCESSING = $(SRCDIR)//ImageProcessing.h $(SRCDIR)/ImageProcessing.cpp
 HISTOGRAM = $(SRCDIR)/Histogram.h $(SRCDIR)/Histogram.cpp
 
 default: $(BLDDIR)/Controller

@@ -3,6 +3,8 @@
         "map": "cpp",
         "iostream": "cpp",
         "cmath": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "unordered_map": "cpp",
+        "cstddef": "cpp"
     }
 }

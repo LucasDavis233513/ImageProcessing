@@ -16,6 +16,8 @@ int main() {
     char choice;
     int factor, levels, size, precentage;
 
+    float f[4] = {2, 3, 4, 4};
+
     // Prewitt kernels
     float prewitt_x[9] = { -1, 0, 1, -1, 0, 1, -1, 0, 1 }; // Horizontal
     float prewitt_y[9] = { -1, -1, -1, 0, 0, 0, 1, 1, 1 }; // Vertical
@@ -42,6 +44,9 @@ int main() {
     cout << "\tj  :  Sharpen with Laplacian\n";
     cout << "\n";
     cout << "\tk  :  Salt and Pepper Image\n";
+    cout << "\n";
+    cout << "\tl  :  1D Fast Fourier Transform\n";
+    cout << "\tm  :  2D Fast Fourier Transform\n";
     cout << "\n";
     cout << "\tr  :  Open an Image\n";
     cout << "\tw  :  Write an Image\n";
@@ -124,6 +129,35 @@ int main() {
                 cin >> precentage;
 
                 process.SaltandPepperImage(image, precentage);
+                break;
+            case 'l':
+                printf("Preforming a Fast Fourier Transform on the 1D array: ");
+
+                for (int i = 0; i < sizeof(f)/sizeof(f[0]); i++) {
+                    printf("%f ", f[i]);
+                }
+                printf("\n");
+
+                process.fft1D(f, 4, -1);    // Preform the forward transform
+                process.NormalizeFFT(f, 4); // Normalize by 1 / N
+
+                for (int i = 0; i < sizeof(f)/sizeof(f[0]); i++) {
+                    printf("%f ", f[i]);
+                }
+
+                printf("\n");
+
+                process.fft1D(f, 4, 1);     // Preform the inverse transform
+
+                for (int j = 0; j < sizeof(f)/sizeof(f[0]); j++) {
+                    printf("%f ", f[j]);
+                }
+
+                printf("\n");
+
+                break;
+            case 'm':
+                cout << "Preforming the Fast Fourier Transform on a 2D Image\n";
                 break;
             case 'r':
                 cout << "Opening an image file...\n";
