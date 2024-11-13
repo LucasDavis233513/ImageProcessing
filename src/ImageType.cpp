@@ -65,6 +65,21 @@ char* ImageType::FindImage() {
     return imageName;
 }
 
+void ImageType::Square(int length) {
+    int sqN, sqM, N, M, Q;
+
+    this->GetImageInfo(N, M, Q);
+
+    sqN = (N - length) / 2;
+    sqM = (M - length) / 2;
+
+    for (int i = 0; i < length; i++) {
+        for (int j = 0; j < length; j++) {
+            this->SetPixelVal(sqN + i, sqM + j, 255);
+        }
+    }
+}
+
 // Public Methods
 void ImageType::GetImageInfo(int &rows, int &cols, int &levels) {
     rows = this->N;

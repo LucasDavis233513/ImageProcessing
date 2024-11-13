@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <iostream>
+#include <fstream>
 
 #include "ImageType.h"
 #include "ImageProcessing.h"
@@ -9,6 +10,7 @@ using namespace std;
 
 int main() {
     ImageType image;
+    ImageType squareImage(512, 512, 255);
     ImageType mask;
     ImageProcessing process;
 
@@ -23,6 +25,8 @@ int main() {
 
     float wave[N];
     float paddedWave[N*2];
+    
+    float* rectangle;
 
     // Prewitt kernels
     float prewitt_x[9] = { -1, 0, 1, -1, 0, 1, -1, 0, 1 }; // Horizontal
@@ -168,7 +172,8 @@ int main() {
                 process.PlotValues(paddedWave, N * 2);
 
                 break;
-            case 'n':
+            case 'n':             
+                squareImage.Square(32);
                 break;
             case 'r':
                 cout << "Opening an image file...\n";

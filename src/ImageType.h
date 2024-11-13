@@ -21,6 +21,8 @@ class ImageType {
     ImageType(ImageType&);
     ~ImageType();
 
+    void Square(int);
+
     void GetImageInfo(int&, int&, int&);
     void SetImageInfo(int, int, int);
     int GetPixelVal(int, int);
