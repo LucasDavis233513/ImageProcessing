@@ -495,6 +495,39 @@ int ImageProcessing::PadArray(float padded[], float data[], int N) {
     return 0;
 }
 
+// Save the pixel values of the image to an array representing the real values, initialize
+// an imaginary array with zeros.
+int ImageProcessing::ConvertImgToFloat(ImageType& image, float real[], float imag[]) {
+    int N, M, Q, val;
+    image.GetImageInfo(N, M, Q);
+
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            val = image.GetPixelVal(i, j);
+
+            real[i * M + j] = static_cast<float>(val);
+            imag[i * M + j] = 0;
+        }
+    }
+    
+    return 0;
+}
+
+// Save the real values back to the image, disregarding the imaginary values
+int ImageProcessing::ConvertFloatToImg(ImageType& image, float real[], float imag[]) {
+    int N, M, Q, val;
+    image.GetImageInfo(N, M, Q);
+    
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            val = static_cast<int>(real[i * M + j]);
+            image.SetPixelVal(i, j, val);
+        }
+    }
+    
+    return 0;
+}
+
 // PLot the Real, imaginary, and magnitude
 // You will need to install gnuplot in order for this function to work
 void ImageProcessing::PlotValues(float values[], int N) {
@@ -542,14 +575,14 @@ void ImageProcessing::PlotValues(float values[], int N) {
 
 // Plot the wave function generated
 // You will need to install gnuplot for this function to work
-void ImageProcessing::PlotWave(float wave[], int N) {
+void ImageProcessing::Plot(float function[], int N, const char* title) {
     FILE* gnuplotPipe = popen("gnuplot -persistent", "w");
 
-    fprintf(gnuplotPipe, "set title 'Generated Cosine Wave'\n");
-    fprintf(gnuplotPipe, "plot '-' with lines title 'Wave'\n");
+    fprintf(gnuplotPipe, "set title '%s'\n", title);
+    fprintf(gnuplotPipe, "plot '-' with lines title '%s'\n", title);
 
     for (int i = 0; i < N; ++i) {
-        fprintf(gnuplotPipe, "%d %f\n", i, wave[i]);
+        fprintf(gnuplotPipe, "%d %f\n", i, function[i]);
     }
 
     fprintf(gnuplotPipe, "e\n");
@@ -560,7 +593,7 @@ void ImageProcessing::PlotWave(float wave[], int N) {
 // Generate a cosine wave
 int ImageProcessing::GenerateCosineWave(float wave[], int N, double u) {
     for (int i = 0; i < N; i++) {
-        wave[i] = cos(2 * M_PI * u * i / N);
+        wave[i] = cos((2 * M_PI * u * i) / N);
     }
 
     return 0;
@@ -594,7 +627,27 @@ int ImageProcessing::NormalizeFFT(float data[], unsigned long nn) {
     return 0;
 }
 
-// Preform the Fast Fourier Transformation on a 1D object (code provided by the teacher)
+// Normalize the FFT; this process only needs to be done on the forward FFT transform
+int ImageProcessing::NormalizeFFT(float real[], float imag[], unsigned long nn) {
+    unsigned long n, i;
+
+    if (!(nn % 2 == 0)) {
+        cerr << "This method only works with inputs of even length";
+        return 1;
+    }
+
+    n = nn << 1;
+
+    // Normalize the FFT by dividing each value by n
+    for (i = 0; i < n; i++) {
+        real[i] /= nn;
+        imag[i] /= nn;
+    }
+
+    return 0;
+}
+
+// Preform the Fast Fourier Transformation on a 1D array; or an object in the time domain (code provided by the teacher)
 int ImageProcessing::fft1D(float data[], unsigned long nn, int isign) {
 	unsigned long n, mmax, m, j, istep, i;
 	double wtemp, wr, wpr, wi, theta;
@@ -664,7 +717,47 @@ int ImageProcessing::fft1D(float data[], unsigned long nn, int isign) {
 }
 
 // Preform the Fast Fourier Transformation on an Image
-int ImageProcessing::fft2D(ImageType& image) {
+int ImageProcessing::fft2D(int N, int M, float real_Fuv[], float imag_Fuv[], int isign) {
+    float* temp = new float[2 * N];
+    float* temp2 = new float[2 * M];
+
+    // Preform the 1D FFT on each row
+    for (int row = 0; row < N; row++) {
+        for (int col = 0; col < M; col++) {
+            temp[2 * col] = real_Fuv[row * M + col];
+            temp[2 * col + 1] = imag_Fuv[row * M + col];
+        }
+
+        fft1D(temp, M, isign);
+
+        for (int col = 0; col < M; col++) {
+            real_Fuv[row * M + col] = temp[2 * col];
+            imag_Fuv[row * M + col] = temp[2 * col + 1];
+        }
+    }
+
+    // Preform the 1D FFT on each Column
+    for (int col = 0; col < M; col++) {
+        for (int row = 0; row < N; row++) {
+            temp2[2 * row] = real_Fuv[row * M + col];
+            temp2[2 * row + 1] = imag_Fuv[row * M + col];
+        }
+
+        fft1D(temp2, N, isign);
+
+        for (int row = 0; row < N; row++) {
+            real_Fuv[row * M + col] = temp2[2 * row];
+            imag_Fuv[row * M + col] = temp2[2 * row + 1];
+        }
+    }
+    
+    delete[] temp;
+    delete[] temp2;
+
+    if (isign == -1) { 
+        NormalizeFFT(real_Fuv, imag_Fuv, N * M);
+    }
+
     return 0;
 }
 

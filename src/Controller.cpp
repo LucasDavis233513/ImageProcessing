@@ -5,12 +5,12 @@
 #include "ImageType.h"
 #include "ImageProcessing.h"
 #include "Histogram.h"
+#include "RectangleFunction.h"
 
 using namespace std;
 
 int main() {
     ImageType image;
-    ImageType squareImage(512, 512, 255);
     ImageType mask;
     ImageProcessing process;
 
@@ -25,8 +25,11 @@ int main() {
 
     float wave[N];
     float paddedWave[N*2];
-    
-    float* rectangle;
+
+    float paddedRect[128 * 2];
+
+    float* real_Fuc;
+    float* imag_Fuc;
 
     // Prewitt kernels
     float prewitt_x[9] = { -1, 0, 1, -1, 0, 1, -1, 0, 1 }; // Horizontal
@@ -59,6 +62,9 @@ int main() {
     cout << "\tm  :  1D FFT on Cosine function\n";
     cout << "\tn  :  1D FFT with a rectangle function\n";
     cout << "\n";
+    cout << "\to  :  Generate a square image\n";
+    cout << "\tp  :  2D FFT\n";
+    cout << "\n";
     cout << "\tr  :  Open an Image\n";
     cout << "\tw  :  Write an Image\n";
     cout << "\n";
@@ -67,6 +73,8 @@ int main() {
 	cout << endl;
 
     do {
+        ImageType squareImage(512, 512, 255);
+
 	    cout << "Enter your choice [ a - d or q ]: ";
         cin >> choice;
 
@@ -142,7 +150,7 @@ int main() {
                 process.SaltandPepperImage(image, precentage);
                 break;
             case 'l':
-                printf("Preforming a Fast Fourier Transform on the 1D array:\n");
+                cout << "Preforming the fft on the 1D array..\n";
 
                 process.fft1D(f, 4, -1);    // Preform the forward transform
                 process.NormalizeFFT(f, 4); // Normalize by 1 / N
@@ -158,22 +166,57 @@ int main() {
 
                 break;
             case 'm':
-                printf("Preforming the fft transform on a cosine wave...\n");
+                cout << "Preforming the fft on a cosine wave...\n";
 
                 process.GenerateCosineWave(wave, N, u);
                 process.ShiftFrequencyToCenter(wave, u);
 
                 process.PadArray(paddedWave, wave, N);
 
-                process.PlotWave(wave, N);
+                process.Plot(wave, N, "Cos Wave");
 
                 process.fft1D(paddedWave, N, -1);
+                process.NormalizeFFT(paddedWave, N);
 
                 process.PlotValues(paddedWave, N * 2);
 
                 break;
             case 'n':             
-                squareImage.Square(32);
+                cout << "Preform the fft on a rectangle function...\n";
+                process.PadArray(paddedRect, rectangle, 128);
+
+                // Plot the rectangle function
+                process.Plot(rectangle, 128, "Rectangle");
+
+                process.fft1D(paddedRect, 128, -1);
+                process.NormalizeFFT(paddedRect, 128);
+
+                process.PlotValues(paddedRect, 128 * 2);
+
+                break;
+            case 'o':
+                cout << "What is the size of the square? ";
+                cin >> size;
+
+                squareImage.Square(size);
+                squareImage.WriteImage();
+
+                break;
+            case 'p':
+                cout << "Preforming the fft on a 2D image...\n";
+
+                real_Fuc = new float[512*512];
+                imag_Fuc = new float[512*512];
+
+
+                process.ConvertImgToFloat(image, real_Fuc, imag_Fuc);
+
+                process.fft2D(512, 512, real_Fuc, imag_Fuc, -1);
+                
+                process.fft2D(512, 512, real_Fuc, imag_Fuc, 1);
+                
+                process.ConvertFloatToImg(image, real_Fuc, imag_Fuc);
+
                 break;
             case 'r':
                 cout << "Opening an image file...\n";

@@ -6,10 +6,11 @@ SRCDIR = src
 OBJDIR = obj
 BLDDIR = bld
 
-OBJS = $(OBJDIR)/ImageType.o $(OBJDIR)/ImageProcessing.o $(OBJDIR)/Histogram.o
+OBJS = $(OBJDIR)/ImageType.o $(OBJDIR)/ImageProcessing.o $(OBJDIR)/Histogram.o $(OBJDIR)/Rectangle.o
 IMAGE =  $(SRCDIR)/ImageType.h $(SRCDIR)/ImageType.cpp
-PROCESSING = $(SRCDIR)//ImageProcessing.h $(SRCDIR)/ImageProcessing.cpp
+PROCESSING = $(SRCDIR)/ImageProcessing.h $(SRCDIR)/ImageProcessing.cpp
 HISTOGRAM = $(SRCDIR)/Histogram.h $(SRCDIR)/Histogram.cpp
+RECTANGLE = $(SRCDIR)/RectangleFunction.h $(SRCDIR)/RectangleFunction.cpp
 
 default: $(BLDDIR)/Controller
 
@@ -24,6 +25,9 @@ $(OBJDIR)/ImageProcessing.o: $(PROCESSING)
 
 $(OBJDIR)/Histogram.o: $(HISTOGRAM)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(SRCDIR)/Histogram.cpp -o $(OBJDIR)/Histogram.o
+
+$(OBJDIR)/Rectangle.o: $(RECTANGLE)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(SRCDIR)/RectangleFunction.cpp -o $(OBJDIR)/Rectangle.o
 
 clExe:
 	rm -f $(BLDDIR)/Controller
