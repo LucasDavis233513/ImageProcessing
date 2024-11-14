@@ -520,7 +520,7 @@ int ImageProcessing::ConvertFloatToImg(ImageType& image, float real[], float ima
     
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < M; j++) {
-            val = static_cast<int>(real[i * M + j]);
+            val = real[i * M + j];
             image.SetPixelVal(i, j, val);
         }
     }
@@ -636,12 +636,12 @@ int ImageProcessing::NormalizeFFT(float real[], float imag[], unsigned long nn) 
         return 1;
     }
 
-    n = nn << 1;
+    n = nn * nn;
 
     // Normalize the FFT by dividing each value by n
     for (i = 0; i < n; i++) {
-        real[i] /= nn;
-        imag[i] /= nn;
+        real[i] /= n;
+        imag[i] /= n;
     }
 
     return 0;
@@ -718,11 +718,10 @@ int ImageProcessing::fft1D(float data[], unsigned long nn, int isign) {
 
 // Preform the Fast Fourier Transformation on an Image
 int ImageProcessing::fft2D(int N, int M, float real_Fuv[], float imag_Fuv[], int isign) {
-    float* temp = new float[2 * N];
-    float* temp2 = new float[2 * M];
-
     // Preform the 1D FFT on each row
     for (int row = 0; row < N; row++) {
+        float* temp = new float[2 * M];         // tempArray with the size of the columns
+
         for (int col = 0; col < M; col++) {
             temp[2 * col] = real_Fuv[row * M + col];
             temp[2 * col + 1] = imag_Fuv[row * M + col];
@@ -734,28 +733,27 @@ int ImageProcessing::fft2D(int N, int M, float real_Fuv[], float imag_Fuv[], int
             real_Fuv[row * M + col] = temp[2 * col];
             imag_Fuv[row * M + col] = temp[2 * col + 1];
         }
+
+        delete[] temp;
     }
 
     // Preform the 1D FFT on each Column
     for (int col = 0; col < M; col++) {
-        for (int row = 0; row < N; row++) {
-            temp2[2 * row] = real_Fuv[row * M + col];
-            temp2[2 * row + 1] = imag_Fuv[row * M + col];
-        }
-
-        fft1D(temp2, N, isign);
+        float* temp = new float[2 * N];
 
         for (int row = 0; row < N; row++) {
-            real_Fuv[row * M + col] = temp2[2 * row];
-            imag_Fuv[row * M + col] = temp2[2 * row + 1];
+            temp[2 * row] = real_Fuv[row * M + col];
+            temp[2 * row + 1] = imag_Fuv[row * M + col];
         }
-    }
-    
-    delete[] temp;
-    delete[] temp2;
 
-    if (isign == -1) { 
-        NormalizeFFT(real_Fuv, imag_Fuv, N * M);
+        fft1D(temp, N, isign);
+
+        for (int row = 0; row < N; row++) {
+            real_Fuv[row * M + col] = temp[2 * row];
+            imag_Fuv[row * M + col] = temp[2 * row + 1];
+        }
+
+        delete[] temp;
     }
 
     return 0;

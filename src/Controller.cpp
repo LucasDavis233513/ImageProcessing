@@ -212,9 +212,11 @@ int main() {
                 process.ConvertImgToFloat(image, real_Fuc, imag_Fuc);
 
                 process.fft2D(512, 512, real_Fuc, imag_Fuc, -1);
-                
+                process.NormalizeFFT(real_Fuc, imag_Fuc, 512);
+
                 process.fft2D(512, 512, real_Fuc, imag_Fuc, 1);
-                
+                process.NormalizeFFT(real_Fuc, imag_Fuc, 512);
+
                 process.ConvertFloatToImg(image, real_Fuc, imag_Fuc);
 
                 break;
