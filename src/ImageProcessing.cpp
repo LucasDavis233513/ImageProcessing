@@ -574,6 +574,7 @@ int ImageProcessing::NormalizeFFT(float data[], int nn) {
     return 0;
 }
 
+// This function will convert the real and imaginary values 
 float** ImageProcessing::NormalizeMagnitude(int N, int M, float **real_Fuv, float **imag_Fuv) {
     float min, max;
 
