@@ -18,18 +18,17 @@ int main() {
     char choice;
     int factor, levels, size, precentage;
 
-    float f[9] = {0, 2, 0, 3, 0, 4, 0, 4};
+    float f[] = {0, 2, 0, 3, 0, 4, 0, 4, 0, 5, 0, 6, 0, 7, 0, 8, 0, 9, 0, 10};
 
-    int N = 128;
+    int N, M, Q;
     double u = 8;
 
-    float wave[N];
-    float paddedWave[N*2];
+    float wave[128];
+    float paddedWave[128 * 2];
 
     float paddedRect[128 * 2];
 
-    float* real_Fuc;
-    float* imag_Fuc;
+    float **real_Fuv, **imag_Fuv, **mag;
 
     // Prewitt kernels
     float prewitt_x[9] = { -1, 0, 1, -1, 0, 1, -1, 0, 1 }; // Horizontal
@@ -64,6 +63,8 @@ int main() {
     cout << "\n";
     cout << "\to  :  Generate a square image\n";
     cout << "\tp  :  2D FFT\n";
+    cout << "\n";
+    cout << "";
     cout << "\n";
     cout << "\tr  :  Open an Image\n";
     cout << "\tw  :  Write an Image\n";
@@ -152,14 +153,12 @@ int main() {
             case 'l':
                 cout << "Preforming the fft on the 1D array..\n";
 
-                process.fft1D(f, 4, -1);    // Preform the forward transform
-                process.NormalizeFFT(f, 4); // Normalize by 1 / N
+                process.fft1D(f, 10, 1);        // Preform the forward transform
+                process.NormalizeFFT(f, 10);    // Normalize by 1 / N
 
-                process.PlotValues(f, 8);
+                process.fft1D(f, 10, -1);       // Preform the inverse transform
 
-                process.fft1D(f, 4, 1);     // Preform the inverse transform
-
-                for (int i = 0; i < 8; i++) {
+                for (int i = 0; i < 20; i++) {
                     printf("%f ", f[i]);
                 }
                 printf("\n");
@@ -168,30 +167,21 @@ int main() {
             case 'm':
                 cout << "Preforming the fft on a cosine wave...\n";
 
-                process.GenerateCosineWave(wave, N, u);
+                process.GenerateCosineWave(wave, 128, u);
                 process.ShiftFrequencyToCenter(wave, u);
 
-                process.PadArray(paddedWave, wave, N);
+                process.PadArray(paddedWave, wave, 128);
 
-                process.Plot(wave, N, "Cos Wave");
-
-                process.fft1D(paddedWave, N, -1);
-                process.NormalizeFFT(paddedWave, N);
-
-                process.PlotValues(paddedWave, N * 2);
+                process.fft1D(paddedWave, 128, 1);
+                process.NormalizeFFT(paddedWave, 128);
 
                 break;
             case 'n':             
                 cout << "Preform the fft on a rectangle function...\n";
                 process.PadArray(paddedRect, rectangle, 128);
 
-                // Plot the rectangle function
-                process.Plot(rectangle, 128, "Rectangle");
-
-                process.fft1D(paddedRect, 128, -1);
+                process.fft1D(paddedRect, (unsigned long)128, -1);
                 process.NormalizeFFT(paddedRect, 128);
-
-                process.PlotValues(paddedRect, 128 * 2);
 
                 break;
             case 'o':
@@ -205,19 +195,30 @@ int main() {
             case 'p':
                 cout << "Preforming the fft on a 2D image...\n";
 
-                real_Fuc = new float[512*512];
-                imag_Fuc = new float[512*512];
+                image.GetImageInfo(N, M, Q);
 
+                real_Fuv = (float **)malloc(N * sizeof(float *));
+                for (int i = 0; i < N; i++) {
+                    real_Fuv[i] = (float *)malloc(M * sizeof(float));
+                }
 
-                process.ConvertImgToFloat(image, real_Fuc, imag_Fuc);
+                imag_Fuv = (float **)malloc(N * sizeof(float *));
+                for (int i = 0; i < M; i++) {
+                    imag_Fuv[i] = (float *)malloc(M * sizeof(float));
+                }
 
-                process.fft2D(512, 512, real_Fuc, imag_Fuc, -1);
-                process.NormalizeFFT(real_Fuc, imag_Fuc, 512);
+                process.ConvertImgToFloat(image, real_Fuv, imag_Fuv);
 
-                process.fft2D(512, 512, real_Fuc, imag_Fuc, 1);
-                process.NormalizeFFT(real_Fuc, imag_Fuc, 512);
+                process.fft2D(N, M, real_Fuv, imag_Fuv, 1);
 
-                process.ConvertFloatToImg(image, real_Fuc, imag_Fuc);
+                mag = process.NormalizeMagnitude(N, M, real_Fuv, imag_Fuv);
+                process.ConvertFloatToImg(image, mag, false);
+
+                image.WriteImage();
+
+                process.fft2D(N, M, real_Fuv, imag_Fuv, -1);
+
+                process.ConvertFloatToImg(image, real_Fuv, true);
 
                 break;
             case 'r':

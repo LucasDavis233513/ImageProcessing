@@ -495,18 +495,21 @@ int ImageProcessing::PadArray(float padded[], float data[], int N) {
     return 0;
 }
 
+
+
 // Save the pixel values of the image to an array representing the real values, initialize
 // an imaginary array with zeros.
-int ImageProcessing::ConvertImgToFloat(ImageType& image, float real[], float imag[]) {
-    int N, M, Q, val;
+int ImageProcessing::ConvertImgToFloat(ImageType& image, float **real, float **imag) {
+    int N, M, Q;
     image.GetImageInfo(N, M, Q);
 
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < M; j++) {
-            val = image.GetPixelVal(i, j);
+            real[i][j] = image.GetPixelVal(i, j);
 
-            real[i * M + j] = static_cast<float>(val);
-            imag[i * M + j] = 0;
+            // Shift the frequencies to the center
+            if((i + j) % 2 != 0) real[i][j] *= -1.0;
+            imag[i][j] = 0;
         }
     }
     
@@ -514,80 +517,24 @@ int ImageProcessing::ConvertImgToFloat(ImageType& image, float real[], float ima
 }
 
 // Save the real values back to the image, disregarding the imaginary values
-int ImageProcessing::ConvertFloatToImg(ImageType& image, float real[], float imag[]) {
+int ImageProcessing::ConvertFloatToImg(ImageType& image, float **real, bool shift) {
     int N, M, Q, val;
     image.GetImageInfo(N, M, Q);
     
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < M; j++) {
-            val = real[i * M + j];
+            if (shift) {
+                // Undo the shift to the center
+                if((i + j) % 2 != 0) real[i][j] *= -1.0;
+            }
+
+            val = (int)real[i][j];
+
             image.SetPixelVal(i, j, val);
         }
     }
     
     return 0;
-}
-
-// PLot the Real, imaginary, and magnitude
-// You will need to install gnuplot in order for this function to work
-void ImageProcessing::PlotValues(float values[], int N) {
-    vector<double> real;
-    vector<double> imag;
-    vector<double> magnitude;
-
-    for (int i = 0; i < N; i += 2) {
-        real.push_back(values[i]);
-        imag.push_back(values[i+1]);
-
-        magnitude.push_back(ComputeMagnitude(real[i], imag[i+1]));
-    }
-
-    FILE* gnuplotPipe = popen("gnuplot -persistent", "w");
-
-    fprintf(gnuplotPipe, "set multiplot layout 1,3\n");
-
-    // Plot real part
-    fprintf(gnuplotPipe, "set title 'Real Part'\n");
-    fprintf(gnuplotPipe, "plot '-' with linespoints title 'Real'\n");
-    for (int i = 0; i < 4; ++i) {
-        fprintf(gnuplotPipe, "%d %f\n", i, real[i]);
-    }
-    fprintf(gnuplotPipe, "e\n");
-
-    // Plot imaginary part
-    fprintf(gnuplotPipe, "set title 'Imaginary Part'\n");
-    fprintf(gnuplotPipe, "plot '-' with linespoints title 'Imaginary'\n");
-    for (int i = 0; i < 4; ++i) {
-        fprintf(gnuplotPipe, "%d %f\n", i, imag[i]);
-    }
-    fprintf(gnuplotPipe, "e\n");
-
-    // Plot magnitude
-    fprintf(gnuplotPipe, "set title 'Magnitude'\n");
-    fprintf(gnuplotPipe, "plot '-' with linespoints title 'Magnitude'\n");
-    for (int i = 0; i < 4; ++i) {
-        fprintf(gnuplotPipe, "%d %f\n", i, magnitude[i]);
-    }
-    fprintf(gnuplotPipe, "e\n");
-
-    pclose(gnuplotPipe);
-}
-
-// Plot the wave function generated
-// You will need to install gnuplot for this function to work
-void ImageProcessing::Plot(float function[], int N, const char* title) {
-    FILE* gnuplotPipe = popen("gnuplot -persistent", "w");
-
-    fprintf(gnuplotPipe, "set title '%s'\n", title);
-    fprintf(gnuplotPipe, "plot '-' with lines title '%s'\n", title);
-
-    for (int i = 0; i < N; ++i) {
-        fprintf(gnuplotPipe, "%d %f\n", i, function[i]);
-    }
-
-    fprintf(gnuplotPipe, "e\n");
-
-    pclose(gnuplotPipe);
 }
 
 // Generate a cosine wave
@@ -609,8 +556,8 @@ int ImageProcessing::ShiftFrequencyToCenter(float signal[], int N) {
 }
 
 // Normalize the FFT; this process only needs to be done on the forward FFT transform
-int ImageProcessing::NormalizeFFT(float data[], unsigned long nn) {
-    unsigned long n, i;
+int ImageProcessing::NormalizeFFT(float data[], int nn) {
+    int n, i;
 
     if (!(nn % 2 == 0)) {
         cerr << "This method only works with inputs of even length";
@@ -621,33 +568,42 @@ int ImageProcessing::NormalizeFFT(float data[], unsigned long nn) {
 
     // Normalize the FFT by dividing each value by n
     for (i = 0; i < n; i++) {
-        data[i] /= nn;
+        data[i] /= (float)nn;
     }
 
     return 0;
 }
 
-// Normalize the FFT; this process only needs to be done on the forward FFT transform
-int ImageProcessing::NormalizeFFT(float real[], float imag[], unsigned long nn) {
-    unsigned long n, i;
+float** ImageProcessing::NormalizeMagnitude(int N, int M, float **real_Fuv, float **imag_Fuv) {
+    float min, max;
 
-    if (!(nn % 2 == 0)) {
-        cerr << "This method only works with inputs of even length";
-        return 1;
+    float **magn_Fuv = (float **)malloc(N * sizeof(float *));
+    for (int i = 0; i < N; i++) {
+        magn_Fuv[i] = (float *)malloc(M * sizeof(float *));
     }
 
-    n = nn * nn;
+    min = max = log(1.0 + hypot(real_Fuv[0][0], imag_Fuv[0][0]));
 
-    // Normalize the FFT by dividing each value by n
-    for (i = 0; i < n; i++) {
-        real[i] /= n;
-        imag[i] /= n;
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            magn_Fuv[i][j] = log(1.0 + hypot(real_Fuv[i][j], imag_Fuv[i][j]));
+
+            if(magn_Fuv[i][j] > max) max = magn_Fuv[i][j];
+            if(magn_Fuv[i][j] < min) min = magn_Fuv[i][j];
+        }
     }
 
-    return 0;
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            magn_Fuv[i][j] = 255.0 * (magn_Fuv[i][j] - min) / (max - min);
+        }
+    }
+
+    return magn_Fuv;
 }
 
 // Preform the Fast Fourier Transformation on a 1D array; or an object in the time domain (code provided by the teacher)
+// This function doesnt normalize the results
 int ImageProcessing::fft1D(float data[], unsigned long nn, int isign) {
 	unsigned long n, mmax, m, j, istep, i;
 	double wtemp, wr, wpr, wi, theta;
@@ -717,44 +673,73 @@ int ImageProcessing::fft1D(float data[], unsigned long nn, int isign) {
 }
 
 // Preform the Fast Fourier Transformation on an Image
-int ImageProcessing::fft2D(int N, int M, float real_Fuv[], float imag_Fuv[], int isign) {
+// This function normalizes the results for you...
+int ImageProcessing::fft2D(int N, int M, float **real_Fuv, float **imag_Fuv, int isign) {
+    float **real_Fxv, **imag_Fxv, *data;
+
+    data = (float *)malloc(2 * N * sizeof(float));
+
+    real_Fxv = (float **)malloc(N * sizeof(float *));
+    for (int i = 0; i < N; i++) 
+        real_Fxv[i] = (float *)malloc(M * sizeof(float));
+
+    imag_Fxv = (float **)malloc(N * sizeof(float *));
+    for (int i = 0; i < N; i++) {
+        imag_Fxv[i] = (float *)malloc(M * sizeof(float));
+    }
+
     // Preform the 1D FFT on each row
     for (int row = 0; row < N; row++) {
-        float* temp = new float[2 * M];         // tempArray with the size of the columns
-
         for (int col = 0; col < M; col++) {
-            temp[2 * col] = real_Fuv[row * M + col];
-            temp[2 * col + 1] = imag_Fuv[row * M + col];
+            data[2 * col] = real_Fuv[row][col];
+            data[2 * col + 1] = imag_Fuv[row][col];
         }
 
-        fft1D(temp, M, isign);
+        fft1D(data - 1, (unsigned long)M, isign);
 
         for (int col = 0; col < M; col++) {
-            real_Fuv[row * M + col] = temp[2 * col];
-            imag_Fuv[row * M + col] = temp[2 * col + 1];
+            real_Fxv[row][col] = data[2 * col];
+            imag_Fxv[row][col] = data[2 * col + 1];
         }
-
-        delete[] temp;
     }
 
     // Preform the 1D FFT on each Column
     for (int col = 0; col < M; col++) {
-        float* temp = new float[2 * N];
-
         for (int row = 0; row < N; row++) {
-            temp[2 * row] = real_Fuv[row * M + col];
-            temp[2 * row + 1] = imag_Fuv[row * M + col];
+            data[2 * row] = real_Fxv[row][col];
+            data[2 * row + 1] = imag_Fxv[row][col];
         }
 
-        fft1D(temp, N, isign);
+        fft1D(data - 1, (unsigned long)N, isign);
 
         for (int row = 0; row < N; row++) {
-            real_Fuv[row * M + col] = temp[2 * row];
-            imag_Fuv[row * M + col] = temp[2 * row + 1];
+            real_Fuv[row][col] = data[2 * row] / (float)N;
+            imag_Fuv[row][col] = data[2 * row + 1] / (float)N;
         }
-
-        delete[] temp;
     }
+
+    free(data);
+    for (int i = 0; i < N; i++) {
+        free(real_Fxv[i]);
+        free(imag_Fxv[i]);
+    }
+    free(real_Fxv);
+    free(imag_Fxv);
+
+    return 0;
+}
+
+// ----------------------------------------------------------------------------------------------
+// Assignment 4
+// ----------------------------------------------------------------------------------------------
+int ImageProcessing::BandRejectFilter() {
+
+
+    return 0;
+}
+
+int ImageProcessing::NotchFilter() {
+
 
     return 0;
 }

@@ -45,19 +45,20 @@ class ImageProcessing {
 
       // Assignment 3
       int PadArray(float*, float*, int N);
-      int ConvertImgToFloat(ImageType&, float*, float*);
-      int ConvertFloatToImg(ImageType&, float*, float*);
-
-      void PlotValues(float*, int);                     // PLot the Real, imaginary, and magnitude
-      void Plot(float*, int, const char*);
+      int ConvertImgToFloat(ImageType&, float**, float**);
+      int ConvertFloatToImg(ImageType&, float**, bool);
 
       int GenerateCosineWave(float*, int, double);
       int ShiftFrequencyToCenter(float*, int);
 
-      int NormalizeFFT(float*, unsigned long);     // Normalize the forward FFT
-      int NormalizeFFT(float*, float*, unsigned long);     // Normalize the forward FFT
+      int NormalizeFFT(float*, int);     // Normalize the forward FFT
+      float** NormalizeMagnitude(int, int, float**, float**);
       int fft1D(float*, unsigned long, int);       // Preform the Fast Fourier Transformation on a 1D object (code provided by the teacher)
-      int fft2D(int, int, float*, float*, int);    // Preform the Fast Fourier Transformation on an Image
+      int fft2D(int, int, float**, float**, int);    // Preform the Fast Fourier Transformation on an Image
+
+      // Assignment 4
+      int bandrejectfilter();
+      int notchfilter();
 };
 
 #endif
