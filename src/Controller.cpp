@@ -30,6 +30,8 @@ int main() {
 
     float **real_Fuv, **imag_Fuv, **mag;
 
+    string method;
+
     // Prewitt kernels
     float prewitt_x[9] = { -1, 0, 1, -1, 0, 1, -1, 0, 1 }; // Horizontal
     float prewitt_y[9] = { -1, -1, -1, 0, 0, 0, 1, 1, 1 }; // Vertical
@@ -63,8 +65,10 @@ int main() {
     cout << "\n";
     cout << "\to  :  Generate a square image\n";
     cout << "\tp  :  2D FFT\n";
+    cout << "\ts  :  2D Inverse FFT\n";
     cout << "\n";
-    cout << "";
+    cout << "\tt  :  Band-(pass or reject)\n";
+    cout << "\tu  :  Notch-(pass or reject)\n";
     cout << "\n";
     cout << "\tr  :  Open an Image\n";
     cout << "\tw  :  Write an Image\n";
@@ -216,9 +220,37 @@ int main() {
 
                 image.WriteImage();
 
+                break;
+            case 's':
+                cout << "Preforming Inverse 2D FFT...\n";
+
                 process.fft2D(N, M, real_Fuv, imag_Fuv, -1);
 
                 process.ConvertFloatToImg(image, real_Fuv, true);
+                break;
+            case 't':
+                image.GetImageInfo(N, M, Q);
+
+                cout << "Do you want to apply a band-reject or band-pass [reject or pass] ";
+                cin >> method;
+
+                if (method.compare("reject") == 0) {
+                    cout << "Applying the band-reject filter...\n";
+
+                    process.BandFilter(N, M, 3, 4, 35, real_Fuv, imag_Fuv, false);
+                } else if (method.compare("pass") == 0) {
+                    cout << "Applying the band-pass filter...\n";
+
+                    process.BandFilter(N, M, 3, 4, 35, real_Fuv, imag_Fuv, true);
+                } else {
+                    cout << "Invalid Method\n";
+                    break;
+                }
+
+                mag = process.NormalizeMagnitude(N, M, real_Fuv, imag_Fuv);
+                process.ConvertFloatToImg(image, mag, false);
+
+                image.WriteImage();
 
                 break;
             case 'r':

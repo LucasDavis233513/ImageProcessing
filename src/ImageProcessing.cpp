@@ -733,12 +733,33 @@ int ImageProcessing::fft2D(int N, int M, float **real_Fuv, float **imag_Fuv, int
 // ----------------------------------------------------------------------------------------------
 // Assignment 4
 // ----------------------------------------------------------------------------------------------
-int ImageProcessing::BandRejectFilter() {
+// This function will preform either a band-reject or band-pass filter
+// If pass is true the function will apply the band-pass filter; if false it will apply the band-reject
+// This function is setup to use the Butterworth low-pass filter
+int ImageProcessing::BandFilter(int N, int M, int width, int sharpness, int radius, float **real_Fuv, float **imag_Fuv, bool pass) {
+    int D;
+    double filter;
 
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            D = sqrt(pow(i - N / 2, 2) + pow(j - M / 2, 2));
+            filter = 1 / (1 + pow((D * width) / (pow(D, 2) - pow(radius, 2)), 2 * sharpness));
+
+            if (pass) {
+                filter = 1 - filter;
+            }
+            
+            real_Fuv[i][j] *= filter;
+            imag_Fuv[i][j] *= filter;
+        }
+    }
 
     return 0;
 }
 
+// This function wil.l preform either a notch-reject or notch-pass filter
+// if pass is true the function will apply the notch-pass fiulter; if false it will apply the notch-reject
+// This function is setup to use the Butterworth high-pass filter
 int ImageProcessing::NotchFilter() {
 
 

@@ -57,7 +57,7 @@ class ImageProcessing {
       int fft2D(int, int, float**, float**, int);    // Preform the Fast Fourier Transformation on an Image
 
       // Assignment 4
-      int BandRejectFilter();
+      int BandFilter(int, int, int, int, int, float**, float**, bool);
       int NotchFilter();
 };
 
