@@ -742,7 +742,7 @@ int ImageProcessing::BandFilter(int N, int M, int width, int sharpness, int radi
 
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < M; j++) {
-            D = sqrt(pow(i - N / 2, 2) + pow(j - M / 2, 2));
+            D      = sqrt(pow(i - N / 2, 2) + pow(j - M / 2, 2));
             filter = 1 / (1 + pow((D * width) / (pow(D, 2) - pow(radius, 2)), 2 * sharpness));
 
             if (pass) {
@@ -757,11 +757,37 @@ int ImageProcessing::BandFilter(int N, int M, int width, int sharpness, int radi
     return 0;
 }
 
-// This function wil.l preform either a notch-reject or notch-pass filter
+// This function will preform either a notch-reject or notch-pass filter
 // if pass is true the function will apply the notch-pass fiulter; if false it will apply the notch-reject
 // This function is setup to use the Butterworth high-pass filter
-int ImageProcessing::NotchFilter() {
+int ImageProcessing::NotchFilter(int N, int M, int pairs, int sharpness, int radius, float **real_Fuv, float **imag_Fuv, bool pass) {
+    int D, negD, count;
+    double filter;
 
+    // Two pairs mean 4 values in total
+    float uk[4] = {15, -15, 15, -15};
+    float vk[4] = {30, -30, -30, 30};
+
+    // Step 3: Apply the notch filter
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            filter = 1;
+            for (int k = 0; k < pairs * 2; k++) {
+                D    = sqrt(pow(i - N / 2 - uk[k], 2) + pow(j - N / 2 - vk[k], 2));
+                negD = sqrt(pow(i - N / 2 + uk[k], 2) + pow(j - N / 2 + vk[k], 2));
+
+                filter *= (1 / (1 + pow(radius / D ,sharpness))) * (1 / (1 + pow(radius / negD, sharpness)));
+            }
+
+            // Subtract 1 by the calculated filter to obtain the pass filtter
+            if (pass) {
+                filter = 1 - filter;
+            }
+            
+            real_Fuv[i][j] *= filter;
+            imag_Fuv[i][j] *= filter;
+        }
+    }
 
     return 0;
 }

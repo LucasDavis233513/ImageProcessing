@@ -202,7 +202,7 @@ int main() {
                 image.GetImageInfo(N, M, Q);
 
                 real_Fuv = (float **)malloc(N * sizeof(float *));
-                for (int i = 0; i < N; i++) {
+                for (int i = 0; i < M; i++) {
                     real_Fuv[i] = (float *)malloc(M * sizeof(float));
                 }
 
@@ -253,6 +253,31 @@ int main() {
                 image.WriteImage();
 
                 break;
+            case 'u':
+                image.GetImageInfo(N, M, Q);
+
+                cout << "Do you want to apply a notch-reject or notch-pass [reject or pass] ";
+                cin >> method;
+
+                if (method.compare("reject") == 0) {
+                    cout << "Applying the notch-reject filter...\n";
+
+                    process.NotchFilter(N, M, 2, 4, 5, real_Fuv, imag_Fuv, false);
+                } else if (method.compare("pass") == 0) {
+                    cout << "Applying the notch-pass filter...\n";
+
+                    process.NotchFilter(N, M, 2, 4, 5, real_Fuv, imag_Fuv, true);
+                } else {
+                    cout << "Invalid Method\n";
+                    break;
+                }
+
+                mag = process.NormalizeMagnitude(N, M, real_Fuv, imag_Fuv);
+                process.ConvertFloatToImg(image, mag, false);
+
+                image.WriteImage();
+
+                break;
             case 'r':
                 cout << "Opening an image file...\n";
 
@@ -267,6 +292,14 @@ int main() {
                 break;
         }
     } while (running);
+
+    // free some memory
+    for (int i = 0; i < N; i++) {
+        free(real_Fuv[i]);
+        free(imag_Fuv[i]);
+    }
+    free(real_Fuv);
+    free(imag_Fuv);
 
     return 0;
 }
