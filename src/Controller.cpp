@@ -11,6 +11,7 @@ using namespace std;
 
 int main() {
     ImageType image;
+    ImageType paddedImage;
     ImageType mask;
     ImageProcessing process;
 
@@ -28,7 +29,7 @@ int main() {
 
     float paddedRect[128 * 2];
 
-    float **real_Fuv, **imag_Fuv, **mag;
+    float **real_Fuv, **imag_Fuv, **mag, **real_Muv, **imag_Muv;
 
     string method;
 
@@ -39,6 +40,9 @@ int main() {
     // Sobel kernels
     float sobel_x[9] = { -1, 0, 1, -2, 0, 2, -1, 0, 1 }; // Horizontal
     float sobel_y[9] = { 1, 2, 1, 0, 0, 0, -1, -2, -1 }; // Vertical
+
+    float paddedSobelX[4][4] = {{0, 0, 0, 0}, {0, -1, 0, 1}, {0, -2, 0, 2}, {0, -1, 0, 1}}; 
+    float paddedSobelY[4][4] = {{0, 0, 0, 0}, {0, -1, -2, -1}, {0, 0, 0, 0}, {0, 1, 2, 1}};
 
     cout << endl;
 	cout << "--------------------------------------------------------" << endl;
@@ -69,6 +73,11 @@ int main() {
     cout << "\n";
     cout << "\tt  :  Band-(pass or reject)\n";
     cout << "\tu  :  Notch-(pass or reject)\n";
+    cout << "\n";
+    cout << "\tv  :  Pad Image\n";
+    cout << "\tx  :  Frequency Convolution\n";
+    cout << "\n";
+    cout << "\ty  :  Homomorphic Filtering\n";
     cout << "\n";
     cout << "\tr  :  Open an Image\n";
     cout << "\tw  :  Write an Image\n";
@@ -202,12 +211,12 @@ int main() {
                 image.GetImageInfo(N, M, Q);
 
                 real_Fuv = (float **)malloc(N * sizeof(float *));
-                for (int i = 0; i < M; i++) {
+                for (int i = 0; i < N; i++) {
                     real_Fuv[i] = (float *)malloc(M * sizeof(float));
                 }
 
                 imag_Fuv = (float **)malloc(N * sizeof(float *));
-                for (int i = 0; i < M; i++) {
+                for (int i = 0; i < N; i++) {
                     imag_Fuv[i] = (float *)malloc(M * sizeof(float));
                 }
 
@@ -227,6 +236,7 @@ int main() {
                 process.fft2D(N, M, real_Fuv, imag_Fuv, -1);
 
                 process.ConvertFloatToImg(image, real_Fuv, true);
+
                 break;
             case 't':
                 image.GetImageInfo(N, M, Q);
@@ -278,6 +288,100 @@ int main() {
                 image.WriteImage();
 
                 break;
+            case 'v':
+                cout << "Padding the image\n";
+                paddedImage = ImageType(image, 2);
+                paddedImage.WriteImage();
+
+                break;
+            case 'x':
+                cout << "Preforming convolution with the sobel mask in the frequency domain\n";
+
+                image.GetImageInfo(N, M, Q);
+
+                real_Muv = (float **)malloc(N * sizeof(float *));
+                for (int i = 0; i < N; i++) {
+                    real_Muv[i] = (float *)calloc(M, sizeof(float));
+                }
+
+                imag_Muv = (float **)malloc(N * sizeof(float *));
+                for (int i = 0; i < N; i++) {
+                    imag_Muv[i] = (float *)calloc(M, sizeof(float));
+                }
+
+                for (int i = 0; i < 4; ++i) {
+                    for (int j = 0; j < 4; ++j) {
+                        int center_i = (N - 4) / 2 + i;
+                        int center_j = (M - 4) / 2 + j;
+                        real_Muv[center_i][center_j] = paddedSobelX[i][j];
+                        imag_Muv[center_i][center_j] = 0;
+
+                        real_Muv[center_i][center_j] *= pow(-1, i + j);
+                    }
+                }
+
+                process.fft2D(N, M, real_Muv, imag_Muv, 1);
+
+                for (int i = 0; i < N; ++i) { 
+                    for (int j = 0; j < M; ++j) { 
+                        real_Muv[i][j] = 0; 
+                    } 
+                }
+
+                for (int i = 0; i < N; ++i) { 
+                    for (int j = 0; j < M; ++j) { 
+                        imag_Muv[i][j] *= pow(-1, i + j); 
+                    } 
+                }
+
+                process.freqConv(N, M, real_Fuv, imag_Fuv, real_Muv, imag_Muv);
+
+                for (int i = 0; i < 4; ++i) {
+                    for (int j = 0; j < 4; ++j) {
+                        int center_i = (N - 4) / 2 + i;
+                        int center_j = (M - 4) / 2 + j;
+                        real_Muv[center_i][center_j] = paddedSobelY[i][j];
+                        imag_Muv[center_i][center_j] = 0;
+
+                        real_Muv[center_i][center_j] *= pow(-1, i + j);
+                    }
+                }
+
+                process.fft2D(N, M, real_Muv, imag_Muv, 1);
+
+                for (int i = 0; i < N; ++i) { 
+                    for (int j = 0; j < M; ++j) { 
+                        real_Muv[i][j] = 0; 
+                    } 
+                }
+
+                for (int i = 0; i < N; ++i) { 
+                    for (int j = 0; j < M; ++j) { 
+                        imag_Muv[i][j] *= pow(-1, i + j); 
+                    } 
+                }
+
+                process.freqConv(N, M, real_Fuv, imag_Fuv, real_Muv, imag_Muv);
+
+                mag = process.NormalizeMagnitude(N, M, real_Fuv, imag_Fuv);
+                process.ConvertFloatToImg(image, mag, false);
+
+                image.WriteImage();
+
+                break;
+            case 'y':
+                cout << "Preforming Homomorphic Filtering...\n";
+
+                image.GetImageInfo(N, M, Q);
+
+                process.HomomorphicFilter(N, M, real_Fuv, imag_Fuv, 1, 1.25, 45, 4);
+
+                mag = process.NormalizeMagnitude(N, M, real_Fuv, imag_Fuv);
+                process.ConvertFloatToImg(image, mag, false);
+
+                image.WriteImage();
+
+                break;
             case 'r':
                 cout << "Opening an image file...\n";
 
@@ -293,13 +397,14 @@ int main() {
         }
     } while (running);
 
-    // free some memory
-    for (int i = 0; i < N; i++) {
-        free(real_Fuv[i]);
-        free(imag_Fuv[i]);
+    if (real_Fuv != NULL && imag_Fuv != NULL) {
+        for (int i = 0; i < N; i++) {
+            free(real_Fuv[i]);
+            free(imag_Fuv[i]);
+        }
+        free(real_Fuv);
+        free(imag_Fuv);
     }
-    free(real_Fuv);
-    free(imag_Fuv);
 
     return 0;
 }

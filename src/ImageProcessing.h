@@ -59,6 +59,8 @@ class ImageProcessing {
       // Assignment 4
       int BandFilter(int, int, int, int, int, float**, float**, bool);
       int NotchFilter(int, int, int, int, int, float**, float**, bool);
+      int freqConv(int, int, float**, float**, float**, float**);
+      int HomomorphicFilter(int, int, float**, float**, double, double, double, double);
 };
 
 #endif

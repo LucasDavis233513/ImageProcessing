@@ -38,6 +38,30 @@ ImageType::ImageType(ImageType &oldImage) {
     }
 }
 
+// Create a padded version of the image
+// The number of padded rows and columns is determined by factor
+ImageType::ImageType(ImageType &oldImage, int factor) {
+    int i, j;
+    this->N = oldImage.N + 2 * factor;
+    this->M = oldImage.M + 2 * factor;
+    this->Q = oldImage.Q;
+    this->pixelValue = new int *[N];
+
+    // Initialize the padded image with zeros
+    for (i = 0; i < N; i++) {
+        this->pixelValue[i] = new int[M];
+        for (j = 0; j < M; j++)
+            this->pixelValue[i][j] = 0;
+    }
+
+    // Insert the original image into the middle of the padded array
+    for (i = 0; i < oldImage.N; i++) {
+        for (j = 0; j < oldImage.M; j++) {
+            this->pixelValue[i + factor][j + factor] = oldImage.pixelValue[i][j];
+        }
+    }
+}
+
 // Delete the image
 ImageType::~ImageType() {
     int i;

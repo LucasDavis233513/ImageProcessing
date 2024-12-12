@@ -761,7 +761,7 @@ int ImageProcessing::BandFilter(int N, int M, int width, int sharpness, int radi
 // if pass is true the function will apply the notch-pass fiulter; if false it will apply the notch-reject
 // This function is setup to use the Butterworth high-pass filter
 int ImageProcessing::NotchFilter(int N, int M, int pairs, int sharpness, int radius, float **real_Fuv, float **imag_Fuv, bool pass) {
-    int D, negD, count;
+    int D, negD;
     double filter;
 
     // Two pairs mean 4 values in total
@@ -784,6 +784,38 @@ int ImageProcessing::NotchFilter(int N, int M, int pairs, int sharpness, int rad
                 filter = 1 - filter;
             }
             
+            real_Fuv[i][j] *= filter;
+            imag_Fuv[i][j] *= filter;
+        }
+    }
+
+    return 0;
+}
+
+// This function will convolve the Fuv and Muv.
+// This will only work if you have the frequency repensentations of the image and the mask
+// and will require that the image is padded.
+int ImageProcessing::freqConv(int N, int M, float **real_Fuv, float **imag_Fuv, float **real_Muv, float **imag_Muv) {
+    for (int i = 0; i < N; ++i) {
+        for (int j = 0; j < M; ++j) {
+            real_Fuv[i][j] = real_Fuv[i][j] * real_Muv[i][j] - imag_Fuv[i][j] * imag_Muv[i][j];
+            imag_Fuv[i][j] = real_Fuv[i][j] * imag_Muv[i][j] + imag_Fuv[i][j] * real_Muv[i][j];
+        }
+    }
+
+    return 0;
+}
+
+int ImageProcessing::HomomorphicFilter(int N, int M, float **real_Fuv, float **imag_Fuv, double gammaH, double gammaL, double D0, double c) {
+    double D, filter;
+
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            D = sqrt(pow(i - N / 2, 2) + pow(j - M / 2, 2));
+
+            double exponent = -c * (D * D) / (D0 * D0);
+            filter = (gammaH - gammaL) * (1.0 - std::exp(exponent)) + gammaL;
+
             real_Fuv[i][j] *= filter;
             imag_Fuv[i][j] *= filter;
         }

@@ -19,6 +19,7 @@ class ImageType {
     ImageType();
     ImageType(int, int, int);
     ImageType(ImageType&);
+    ImageType(ImageType&, int);
     ~ImageType();
 
     void Square(int);
